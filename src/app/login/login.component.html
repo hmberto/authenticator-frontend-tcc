@@ -4,17 +4,22 @@
             <label>
                 E-mail:
             </label>
-            
-            <input #inputEmail placeholder="contato@example.com" type="text" name="email"
-                [(ngModel)]="email" (ngModelChange)="onEmailChange($event)" emailAutocomplete #emailAutocomplete="emailAutocomplete" (suggestionSelected)="onSuggestionSelected($event)">
-            
-            <br>
-            <li *ngFor="let suggestion of emailAutocomplete.suggestionList" (click)="onSuggestionSelected(suggestion)">{{ suggestion }}</li>
-            
-            <br>
+
+            <div class="email-suggestions">
+                <input #inputEmail placeholder="contato@example.com" type="text" name="email" [(ngModel)]="email"
+                    (ngModelChange)="onEmailChange($event)" emailAutocomplete #emailAutocomplete="emailAutocomplete"
+                    (suggestionSelected)="onSuggestionSelected($event)">
+
+                <ul id="emailAutocompleteList" class="email-suggestions-list">
+                    <li *ngFor="let suggestion of emailAutocomplete.suggestionList; let i = index"
+                        [ngClass]="{ 'selected': i === activeSuggestion }"
+                        (click)="onSuggestionSelected(suggestion)">{{ suggestion }}</li>
+                </ul>
+            </div>
+
             <button type="submit">Enviar</button>
             <br>
-            <div class="terms-div">
+            <div class="terms-div" (click)="onLabelTermsClick()">
                 <input type="checkbox" name="terms" [(ngModel)]="terms" (ngModelChange)="onTermsChange($event)">
                 <label>Concordo com os termos de uso.</label>
             </div>

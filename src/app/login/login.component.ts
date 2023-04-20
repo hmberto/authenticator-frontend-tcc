@@ -15,6 +15,7 @@ export class LoginComponent {
 
   email: string = '';
   terms: boolean = false;
+  activeSuggestion: any = null;
 
   ngOnInit() {
 
@@ -45,7 +46,6 @@ export class LoginComponent {
 
   onSuggestionSelected(suggestion: string) {
     this.email = `${suggestion ? suggestion : ''}`;
-    console.log("testaa")
     this.onClearSuggestions();
     if (this.inputEmail) {
       this.inputEmail.nativeElement.focus();
@@ -54,6 +54,19 @@ export class LoginComponent {
 
   onTermsChange(event: any) {
     this.onClearError();
+  }
+
+  onLabelTermsClick() {
+    if(this.terms) {
+      this.terms = false;
+    }
+    else {
+      this.terms = true;
+    }
+  }
+
+  onSuggestionClicked(suggestion: string) {
+    this.emailAutocomplete?.onSuggestionClicked(suggestion);
   }
 
   login() {

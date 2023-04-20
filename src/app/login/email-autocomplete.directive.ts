@@ -1,10 +1,13 @@
 import { Directive, ViewChild, ElementRef, HostListener, Output, EventEmitter } from '@angular/core';
 
+import { LoginComponent } from './login.component';
+
 @Directive({
     selector: '[emailAutocomplete]',
     exportAs: 'emailAutocomplete'
 })
 export class EmailAutocompleteDirective {
+    @ViewChild(LoginComponent, { static: false }) loginComponent?: LoginComponent;
     @ViewChild('inputEmail', { static: false }) inputEmail?: ElementRef;
     @Output() suggestionSelected = new EventEmitter<string>();
 
@@ -26,6 +29,13 @@ export class EmailAutocompleteDirective {
 
     clearSuggestions() {
         this.suggestions = [];
+    }
+
+    onSuggestionClicked(suggestion: string) {
+        if (this.loginComponent) {
+            this.loginComponent.activeSuggestion = suggestion;
+        }
+        this.suggestionSelected.emit(suggestion);
     }
 
     @HostListener('input')
@@ -65,20 +75,58 @@ export class EmailAutocompleteDirective {
         if (event.key === 'ArrowUp') {
             event.preventDefault();
             this.activeSuggestionIndex = Math.max(this.activeSuggestionIndex - 1, 0);
-            console.log(this.activeSuggestionIndex)
-        } else if (event.key === 'ArrowDown') {
+        }
+        else if (event.key === 'ArrowDown') {
             event.preventDefault();
             this.activeSuggestionIndex = Math.min(
                 this.activeSuggestionIndex + 1,
                 this.suggestions.length - 1
             );
-        } else if (event.key === 'Enter' && this.suggestions.length > 0) {
+        }
+        else if (event.key === 'Enter' && this.suggestions.length > 0) {
             event.preventDefault();
             const suggestion = this.suggestions[this.activeSuggestionIndex];
             this.suggestions = [];
             this.activeSuggestionIndex = 0;
-            
+
             this.suggestionSelected.emit(suggestion);
+        }
+
+        this.addSelectedClass();
+    }
+
+    @HostListener('keyup', ['$event'])
+    onKeyUp(event: KeyboardEvent) {
+        this.addSelectedClass();
+    }
+
+    @HostListener('mouseover', ['$event.target'])
+    onMouseOver(target: any) {
+        const suggestions = target.parentNode.getElementsByTagName('li');
+        for (let i = 0; i < suggestions.length; i++) {
+            if (suggestions[i] === target) {
+                this.activeSuggestionIndex = i;
+            }
+        }
+        this.addSelectedClass();
+    }
+
+    addSelectedClass() {
+        if (this.loginComponent) {
+            this.loginComponent.activeSuggestion = this.suggestions[this.activeSuggestionIndex];
+        }
+
+        const suggestionList = document.getElementById('emailAutocompleteList');
+        if (suggestionList) {
+            const suggestions = suggestionList.getElementsByTagName('li');
+            for (let i = 0; i < suggestions.length; i++) {
+                if (i === this.activeSuggestionIndex) {
+                    suggestions[i].classList.add('selected');
+                }
+                else {
+                    suggestions[i].classList.remove('selected');
+                }
+            }
         }
     }
 }
