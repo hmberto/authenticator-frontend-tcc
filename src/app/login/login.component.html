@@ -1,0 +1,17 @@
+<div class="login-form">
+    <div class="cont">
+        <form (submit)="login()">
+            <label>
+                E-mail:
+            </label>
+            <input type="text" name="email" [(ngModel)]="email">
+            <br>
+            <button type="submit">Enviar</button>
+            <br>
+            <div class="terms-div">
+                <input type="checkbox" name="terms" [(ngModel)]="terms">
+                <label>Concordo com os termos de uso.</label>
+            </div>
+        </form>
+    </div>
+</div>
