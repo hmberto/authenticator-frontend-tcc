@@ -14,11 +14,14 @@ export class EmailAutocompleteDirective {
     private suggestions: string[] = [];
     private activeSuggestionIndex = 0;
     private readonly emailDomains = [
+        "humbertoaraujo.com",
         "gmail.com",
         "yahoo.com",
+        "outlook.com",
         "hotmail.com",
         "aol.com",
-        "outlook.com"
+        "hotmail.com.br",
+        "outlook.com.br"
     ];
 
     constructor(private el: ElementRef) { }
@@ -56,14 +59,14 @@ export class EmailAutocompleteDirective {
                 domain.startsWith(typedDomain)
             );
 
-            this.suggestions = matchingDomains.map(domain => typedUsername + '@' + domain);
+            this.suggestions = matchingDomains.map(domain => typedUsername + '@' + domain).slice(0, 5);
             this.activeSuggestionIndex = 0;
 
             if (this.emailDomains.includes(typedDomain)) {
                 this.suggestions = [];
             }
         } else if (index === value.length - 1) {
-            this.suggestions = this.emailDomains.map(domain => typedUsername + '@' + domain);
+            this.suggestions = this.emailDomains.map(domain => typedUsername + '@' + domain).slice(0, 5);
             this.activeSuggestionIndex = 0;
         } else {
             this.suggestions = [];

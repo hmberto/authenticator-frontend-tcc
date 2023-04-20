@@ -22,6 +22,10 @@ export class LoginComponent {
   }
 
   ngAfterViewInit() {
+    this.focusAtEmail();
+  }
+
+  focusAtEmail() {
     if (this.inputEmail) {
       this.inputEmail.nativeElement.focus();
     }
@@ -47,21 +51,24 @@ export class LoginComponent {
   onSuggestionSelected(suggestion: string) {
     this.email = `${suggestion ? suggestion : ''}`;
     this.onClearSuggestions();
-    if (this.inputEmail) {
-      this.inputEmail.nativeElement.focus();
-    }
+    this.focusAtEmail();
   }
 
   onTermsChange(event: any) {
     this.onClearError();
+    this.focusAtEmail();
   }
 
   onLabelTermsClick() {
     if(this.terms) {
       this.terms = false;
+      this.focusAtEmail();
+      this.onClearError();
     }
     else {
       this.terms = true;
+      this.focusAtEmail();
+      this.onClearError();
     }
   }
 
@@ -72,6 +79,7 @@ export class LoginComponent {
   login() {
     if (this.terms == false && this.error) {
       this.error.nativeElement.innerText = 'Você precisa concordar com os termos.';
+      this.focusAtEmail();
     }
     else if (this.email == '' && this.error && this.inputEmail) {
       this.error.nativeElement.innerText = 'Insira um endereço de email válido.';
