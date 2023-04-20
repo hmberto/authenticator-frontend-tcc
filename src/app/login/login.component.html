@@ -4,13 +4,16 @@
             <label>
                 E-mail:
             </label>
-            <input type="text" name="email" [(ngModel)]="email">
+            <input #inputEmail placeholder="contato@example.com" type="text" name="email" [(ngModel)]="email" (ngModelChange)="onEmailChange($event)">
             <br>
             <button type="submit">Enviar</button>
             <br>
             <div class="terms-div">
-                <input type="checkbox" name="terms" [(ngModel)]="terms">
+                <input type="checkbox" name="terms" [(ngModel)]="terms" (ngModelChange)="onTermsChange($event)">
                 <label>Concordo com os termos de uso.</label>
+            </div>
+            <div class="div-error">
+                <label #error class="error"></label>
             </div>
         </form>
     </div>

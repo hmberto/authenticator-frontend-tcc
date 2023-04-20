@@ -37,6 +37,20 @@
     font-size: 16px;
 }
 
+.login-form input[type="text"]::placeholder {
+    color: #ffffff97;
+}
+
+/* para o Internet Explorer */
+input:-ms-input-placeholder {
+    color: #ffffff97;
+}
+
+/* para o Google Chrome e o Safari */
+input::-webkit-input-placeholder {
+    color: #ffffff97;
+}
+
 .login-form button[type="submit"] {
     width: calc(100% + 32px);
     padding: 10px;
@@ -63,4 +77,10 @@
 .login-form button[type="submit"]:hover {
     background-color: #FFF;
     color: #6B5B95;
+}
+
+.div-error label {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #FF7F50;
 }
