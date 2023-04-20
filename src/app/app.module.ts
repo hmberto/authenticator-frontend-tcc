@@ -7,13 +7,15 @@ import { AppComponent } from './app.component';
 import { TopMenuComponent } from './top-menu/top-menu.component';
 import { LoginComponent } from './login/login.component';
 import { FooterComponent } from './footer/footer.component';
+import { EmailAutocompleteDirective } from './login/email-autocomplete.directive';
 
 @NgModule({
   declarations: [
     AppComponent,
     TopMenuComponent,
     LoginComponent,
-    FooterComponent
+    FooterComponent,
+    EmailAutocompleteDirective
   ],
   imports: [
     BrowserModule,

@@ -1,12 +1,15 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { EmailAutocompleteDirective } from './email-autocomplete.directive';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css'],
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
+  @ViewChild(EmailAutocompleteDirective, { static: false }) emailAutocomplete?: EmailAutocompleteDirective;
   @ViewChild('inputEmail', { static: false }) inputEmail?: ElementRef;
   @ViewChild('error', { static: false }) error?: ElementRef;
 
@@ -23,16 +26,34 @@ export class LoginComponent {
     }
   }
 
-  constructor(private router: Router) { }
-
-  onEmailChange(event: any) {
-    console.log('Novo email digitado:', event);
+  onClearSuggestions() {
+    this.emailAutocomplete?.clearSuggestions();
   }
 
-  onTermsChange(event: any) {
+  onClearError() {
     if (this.terms == true && this.error) {
       this.error.nativeElement.innerText = '';
     }
+  }
+
+  constructor(private router: Router) { }
+
+  onEmailChange(newValue: string) {
+    this.email = newValue;
+    this.onClearError();
+  }
+
+  onSuggestionSelected(suggestion: string) {
+    this.email = `${suggestion ? suggestion : ''}`;
+    console.log("testaa")
+    this.onClearSuggestions();
+    if (this.inputEmail) {
+      this.inputEmail.nativeElement.focus();
+    }
+  }
+
+  onTermsChange(event: any) {
+    this.onClearError();
   }
 
   login() {
@@ -43,7 +64,7 @@ export class LoginComponent {
       this.error.nativeElement.innerText = 'Insira um endereço de email válido.';
       this.inputEmail.nativeElement?.focus();
     } else {
-      
+
     }
   }
 }
