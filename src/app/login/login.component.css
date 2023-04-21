@@ -86,8 +86,12 @@ input::-webkit-input-placeholder {
     color: #6B5B95;
 }
 
+.div-error {
+    margin: 0;
+}
+
 .div-error label {
-    margin-top: 10px;
+    margin: 0px;
     font-size: 12px;
     color: #FF7F50;
 }

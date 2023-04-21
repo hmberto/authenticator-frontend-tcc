@@ -36,8 +36,8 @@ export class LoginComponent {
   }
 
   onClearError() {
-    if (this.terms == true && this.error) {
-      this.error.nativeElement.innerText = '';
+    if (this.terms && this.error) {
+      this.error.nativeElement.innerText = '⠀';
     }
   }
 
