@@ -8,6 +8,7 @@ import { TopMenuComponent } from './top-menu/top-menu.component';
 import { LoginComponent } from './login/login.component';
 import { FooterComponent } from './footer/footer.component';
 import { EmailAutocompleteDirective } from './login/email-autocomplete.directive';
+import { SigninGeneratorComponent } from './signin-generator/signin-generator.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { EmailAutocompleteDirective } from './login/email-autocomplete.directive
     TopMenuComponent,
     LoginComponent,
     FooterComponent,
-    EmailAutocompleteDirective
+    EmailAutocompleteDirective,
+    SigninGeneratorComponent
   ],
   imports: [
     BrowserModule,

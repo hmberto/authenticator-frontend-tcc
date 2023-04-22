@@ -1,0 +1,24 @@
+<div class="generator-form">
+    <div class="cont">
+        <form (submit)="generator()">
+            <label>
+                Verificação de conta
+            </label>
+
+            <p>Para ajudar a proteger sua conta, a gente quer confirmar se é realmente você que está tentando fazer login</p>
+
+            <select name="selectedOption" [(ngModel)]="selectedOption" (ngModelChange)="onOptionChange()">
+                <option *ngFor="let choice of choices" [value]="choice.value">{{choice.name}}</option>
+            </select>
+
+            <p>Enviaremos um e-mail com um código de acesso único ou um link seguro para confirmar sua identidade</p>
+
+            <button type="submit">Enviar</button>
+            <br>
+
+            <div class="div-error">
+                <label #error class="error">⠀</label>
+            </div>
+        </form>
+    </div>
+</div>

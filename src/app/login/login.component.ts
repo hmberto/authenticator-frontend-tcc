@@ -85,7 +85,7 @@ export class LoginComponent {
       this.error.nativeElement.innerText = 'Insira um endereço de email válido.';
       this.inputEmail.nativeElement?.focus();
     } else {
-
+      this.router.navigate(['/signin-generator']);
     }
   }
 }
