@@ -1,0 +1,101 @@
+.validator-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.cont {
+    background-color: #6B5B95;
+    width: 270px;
+    height: auto;
+    padding: 25px 45px 15px 15px;
+    border-radius: 15px;
+}
+
+.validator-form label {
+    font-size: 1.2rem;
+    margin-bottom: 0px;
+    display: block;
+    width: 100%;
+    color: #FFF;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.validator-form p {
+    font-size: 14px;
+    margin-bottom: 10px;
+    margin-top: 0px;
+    display: block;
+    width: 100%;
+    color: #ffffffce;
+}
+
+.validator-form button[type="submit"] {
+    width: calc(100% + 30px);
+    padding: 10px;
+    border: solid #FFF 2px;
+    background-color: transparent;
+    color: #FFF;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.validator-form button[type="submit"]:hover {
+    background-color: #FFF;
+    color: #6B5B95;
+}
+
+.validator-form a {
+    display: block;
+    color: #ffffffce;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.div-error {
+    margin: 0;
+    margin-top: 10px;
+}
+
+.div-error label {
+    margin: 0px;
+    font-size: 12px;
+    color: #FF7F50;
+}
+
+.validator-form input[type="text"] {
+    width: 100%;
+    padding: 15px 15px 15px 15px;
+    border: none;
+    margin-bottom: 0px;
+    border-bottom: solid #FFF 4px;
+    background-color: transparent;
+    color: #FFF;
+    outline: none;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.validator-form input[type="text"]::placeholder {
+    color: #ffffff97;
+}
+
+/* para o Internet Explorer */
+.validator-form input:-ms-input-placeholder {
+    color: #ffffff97;
+}
+
+/* para o Google Chrome e o Safari */
+.validator-form input::-webkit-input-placeholder {
+    color: #ffffff97;
+}
+
+.hide-type-auth {
+    display: none;
+}

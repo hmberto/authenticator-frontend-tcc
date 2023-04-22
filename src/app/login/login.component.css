@@ -42,12 +42,12 @@
 }
 
 /* para o Internet Explorer */
-input:-ms-input-placeholder {
+.login-form input:-ms-input-placeholder {
     color: #ffffff97;
 }
 
 /* para o Google Chrome e o Safari */
-input::-webkit-input-placeholder {
+.login-form input::-webkit-input-placeholder {
     color: #ffffff97;
 }
 

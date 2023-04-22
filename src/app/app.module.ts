@@ -9,6 +9,7 @@ import { LoginComponent } from './login/login.component';
 import { FooterComponent } from './footer/footer.component';
 import { EmailAutocompleteDirective } from './login/email-autocomplete.directive';
 import { SigninGeneratorComponent } from './signin-generator/signin-generator.component';
+import { SigninValidatorComponent } from './signin-validator/signin-validator.component';
 
 @NgModule({
   declarations: [
@@ -17,7 +18,8 @@ import { SigninGeneratorComponent } from './signin-generator/signin-generator.co
     LoginComponent,
     FooterComponent,
     EmailAutocompleteDirective,
-    SigninGeneratorComponent
+    SigninGeneratorComponent,
+    SigninValidatorComponent
   ],
   imports: [
     BrowserModule,

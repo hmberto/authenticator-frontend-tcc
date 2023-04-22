@@ -60,7 +60,7 @@ export class LoginComponent {
   }
 
   onLabelTermsClick() {
-    if(this.terms) {
+    if (this.terms) {
       this.terms = false;
       this.focusAtEmail();
       this.onClearError();
@@ -81,11 +81,18 @@ export class LoginComponent {
       this.error.nativeElement.innerText = 'Você precisa concordar com os termos.';
       this.focusAtEmail();
     }
-    else if (this.email == '' && this.error && this.inputEmail) {
+    else if (!this.validateEmail(this.email) && this.error && this.inputEmail) {
       this.error.nativeElement.innerText = 'Insira um endereço de email válido.';
       this.inputEmail.nativeElement?.focus();
     } else {
-      this.router.navigate(['/signin-generator']);
+      const [username, domain] = this.email.split('@');
+
+      this.router.navigate(['/signin-generator'], { queryParams: { username: username, domain: domain } });
     }
+  }
+
+  validateEmail(email: string): boolean {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
   }
 }

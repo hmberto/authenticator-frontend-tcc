@@ -1,0 +1,49 @@
+<div class="validator-form" [ngClass]="{'hide-type-auth': !showOTPAuth}">
+    <div class="cont">
+        <form (submit)="validatorOTP()">
+            <label>
+                Verificação de conta
+            </label>
+
+            <p>Enviamos um e-mail com um código de acesso único
+                <br><br>
+                Digite o código abaixo para confirmar sua identidade
+            </p>
+
+            <input #inputOTP placeholder="Seu código de 6 dígitos" type="text" name="otp" [(ngModel)]="otp"
+                (ngModelChange)="onOTPChange($event)">
+
+            <button type="submit">Enviar</button>
+
+            <a>Enviar novo código</a>
+
+            <div class="div-error">
+                <label #errorOTP class="error">⠀</label>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="validator-form" [ngClass]="{'hide-type-auth': !showLinkAuth}">
+    <div class="cont">
+        <form (submit)="validatorLink()">
+            <label>
+                Verificação de conta
+            </label>
+
+            <p>Enviamos um e-mail com um link de acesso seguro
+                <br><br>
+                Clique no link e siga as instruções para confirmar sua identidade
+            </p>
+
+            <button type="submit">Já confirmei</button>
+
+            <a>Enviar novo link</a>
+            <a (click)="onChangeType()">Usar outra forma de login</a>
+
+            <div class="div-error">
+                <label #errorLink class="error">⠀</label>
+            </div>
+        </form>
+    </div>
+</div>

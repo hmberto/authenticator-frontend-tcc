@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-signin-generator',
@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 export class SigninGeneratorComponent {
   @ViewChild('error', { static: false }) error?: ElementRef;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private route: ActivatedRoute) { }
 
   choices = [
     { name: 'Selecione uma opção', value: 1 },
@@ -18,6 +18,17 @@ export class SigninGeneratorComponent {
   ];
 
   selectedOption: number = 1;
+  username: any = '';
+  domain: any = '';
+
+  ngOnInit() {
+    this.username = this.route.snapshot.queryParamMap.get('username');
+    this.domain = this.route.snapshot.queryParamMap.get('domain');
+
+    if(this.username == null || this.username == null) {
+      this.router.navigate(['login']);
+    }
+  }
 
   ngAfterViewInit() {
 
@@ -34,7 +45,19 @@ export class SigninGeneratorComponent {
       this.error.nativeElement.innerText = 'Você precisa escolher uma opção.';
     }
     else {
-      this.router.navigate(['/signin-validator']);
+      this.onRedirect(this.selectedOption);
+    }
+  }
+
+  onRedirect(type: number) {
+    if(type == 2) {
+      this.router.navigate(['/signin-validator'], { queryParams: { type: 'otp', username: this.username, domain: this.domain } });
+    }
+    else if(type == 3) {
+      this.router.navigate(['/signin-validator'], { queryParams: { type: 'link', username: this.username, domain: this.domain } });
+    }
+    else {
+      this.router.navigate(['/signin-validator'], { queryParams: { type: 'error' } });
     }
   }
 
