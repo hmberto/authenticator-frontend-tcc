@@ -1,1 +1,22 @@
-<p>confirm-access works!</p>
+<div class="confirm-access">
+    <div class="cont">
+        <label>
+            Solicitação de acesso
+        </label>
+
+        <p>Enviamos este link porque identificamos uma tentativa de login para este endereço de e-mail. Se você não foi
+            você, por favor, não autorize o login
+        </p>
+        <br>
+        <p>Data: {{ confirmAccessDate }}</p>
+        <p>IP: {{ confirmAccessIp }}</p>
+        <p>Email: {{ confirmAccessEmail }}</p>
+
+        <button type="confirm" (click)="confirmAccess(true)">Fazer login</button>
+        <button type="reject" (click)="confirmAccess(false)">Não permitir</button>
+
+        <div class="div-error">
+            <label #error class="error">⠀</label>
+        </div>
+    </div>
+</div>
