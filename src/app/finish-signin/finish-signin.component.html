@@ -8,10 +8,10 @@
             <p>Precisamos de um pouco mais de informações para configurar sua conta</p>
 
             <input #inputFirstName placeholder="Nome" type="text" name="firstName" [(ngModel)]="firstName"
-                (ngModelChange)="onFirstNameChange($event)">
+                (ngModelChange)="onFirstNameChange()">
             <br><br>
             <input #inputLastName placeholder="Sobrenome" type="text" name="lastName" [(ngModel)]="lastName"
-                (ngModelChange)="onLastNameChange($event)">
+                (ngModelChange)="onLastNameChange()">
 
             <button type="submit">Enviar</button>
             <br>

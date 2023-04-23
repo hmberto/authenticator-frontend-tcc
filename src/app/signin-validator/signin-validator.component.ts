@@ -1,40 +1,37 @@
-import { query } from '@angular/animations';
-import { Component, ViewChild, ElementRef } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, ElementRef, OnInit, ViewChild, Inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+
+import { SharedHttpService } from '../shared/shared-http.service';
 
 @Component({
   selector: 'app-signin-validator',
   templateUrl: './signin-validator.component.html',
   styleUrls: ['./signin-validator.component.css']
 })
-export class SigninValidatorComponent {
-  @ViewChild('inputOTP', { static: false }) inputOTP?: ElementRef;
-  @ViewChild('errorOTP', { static: false }) errorOTP?: ElementRef;
-  @ViewChild('errorLink', { static: false }) errorLink?: ElementRef;
+export class SigninValidatorComponent implements OnInit {
+  @ViewChild('inputOTP', { static: false }) inputOTP?: ElementRef<HTMLInputElement>;
+  @ViewChild('errorOTP', { static: false }) errorOTP?: ElementRef<HTMLElement>;
+  @ViewChild('errorLink', { static: false }) errorLink?: ElementRef<HTMLElement>;
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
+  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedHttpService: SharedHttpService) { }
 
-  otp: string = '';
+  otp = '';
   showOTPAuth = false;
   showLinkAuth = false;
-  authType: any = '';
-  username: any = '';
-  domain: any = '';
+  private authType = '';
+  private email = '';
 
   ngOnInit() {
-    this.authType = this.route.snapshot.queryParamMap.get('type');
-    this.username = this.route.snapshot.queryParamMap.get('username');
-    this.domain = this.route.snapshot.queryParamMap.get('domain');
+    const storage = window.localStorage;
+    const loginDone = storage.getItem('signin-process-login') == 'done';
 
-    if(this.username == null || this.username == null) {
-      this.router.navigate(['login']);
-    }
+    this.authType = storage.getItem('signin-validator-type') || '';
+    this.email = storage.getItem('email') || '';
 
-    if (this.authType === 'otp') {
+    if (loginDone && this.email && this.authType == 'otp') {
       this.showOTPAuth = true;
-      this.focusAtOTP();
     }
-    else if(this.authType === 'link') {
+    else if (loginDone && this.email && this.authType == 'link') {
       this.showLinkAuth = true;
     }
     else {
@@ -43,17 +40,17 @@ export class SigninValidatorComponent {
   }
 
   ngAfterViewInit() {
-    if(this.showOTPAuth) {
+    if (this.showOTPAuth) {
       this.focusAtOTP();
     }
   }
 
-  onOTPChange(newValue: string) {
+  onOTPChange() {
     this.onClearError();
   }
 
   onChangeType() {
-    this.router.navigate(['/signin-generator'], { queryParams: { username: this.username, domain: this.domain } });
+    this.router.navigate(['signin-generator']);
   }
 
   onClearError() {
@@ -74,18 +71,42 @@ export class SigninValidatorComponent {
       this.focusAtOTP();
     }
     else {
-      this.router.navigate(['']);
+      const otpObject = {
+        email: this.email,
+        sessionTokenOrOTP: this.otp,
+        approve: 'true'
+      };
+      const jsonEmail = JSON.stringify(otpObject);
+
+      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/validate-otp`, jsonEmail)
+        .subscribe(user => {
+          if (user == null) {
+            const storage = window.localStorage;
+            storage.removeItem('signin-validator-type');
+            storage.setItem('signin-process-validator', 'done');
+
+            if (storage.getItem('isLogin') == 'false') {
+              this.router.navigate(['finish-signin']);
+            }
+            else {
+              this.router.navigate(['']);
+            }
+          }
+          else if (user.userId == 0) {
+            if (this.errorOTP) {
+              this.errorOTP.nativeElement.innerText = 'Insira um código de acesso válido.';
+            }
+          }
+        });
     }
   }
 
   validatorLink() {
-    this.router.navigate(['/finish-signin'], { queryParams: { username: this.username, domain: this.domain } });
-
     if (this.errorLink) {
-      this.errorLink.nativeElement.innerText = 'Não foi possivel confirmar seu acesso.';
-    }
-    else {
-      this.router.navigate(['']);
+      this.errorLink.nativeElement.innerText = 'Não foi possível confirmar seu acesso.';
+    } else {
+      window.localStorage.setItem('signin-process-validator', 'done');
+      this.router.navigate(['finish-signin']);
     }
   }
 }

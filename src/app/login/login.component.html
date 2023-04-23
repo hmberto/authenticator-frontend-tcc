@@ -2,7 +2,7 @@
     <div class="cont">
         <form (submit)="login()">
             <label>
-                E-mail
+                Entrar ou Criar Conta
             </label>
 
             <div class="email-suggestions">
@@ -20,7 +20,7 @@
             <button type="submit">Enviar</button>
             <br>
             <div class="terms-div" (click)="onLabelTermsClick()">
-                <input type="checkbox" name="terms" [(ngModel)]="terms" (ngModelChange)="onTermsChange($event)">
+                <input type="checkbox" name="terms" [(ngModel)]="terms" (ngModelChange)="onTermsChange()">
                 <label>Concordo com os termos de uso.</label>
             </div>
             <div class="div-error">

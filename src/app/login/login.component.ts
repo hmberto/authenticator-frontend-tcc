@@ -1,5 +1,8 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
 import { Router } from '@angular/router';
+
+import { SharedService } from '../shared/shared.service';
+import { SharedHttpService } from '../shared/shared-http.service';
 
 import { EmailAutocompleteDirective } from './email-autocomplete.directive';
 
@@ -13,13 +16,11 @@ export class LoginComponent {
   @ViewChild('inputEmail', { static: false }) inputEmail?: ElementRef;
   @ViewChild('error', { static: false }) error?: ElementRef;
 
-  email: string = '';
-  terms: boolean = false;
+  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedService: SharedService, private sharedHttpService: SharedHttpService) { }
+
+  email = '';
+  terms = false;
   activeSuggestion: any = null;
-
-  ngOnInit() {
-
-  }
 
   ngAfterViewInit() {
     this.focusAtEmail();
@@ -32,7 +33,9 @@ export class LoginComponent {
   }
 
   onClearSuggestions() {
-    this.emailAutocomplete?.clearSuggestions();
+    if (this.emailAutocomplete) {
+      this.emailAutocomplete.clearSuggestions();
+    }
   }
 
   onClearError() {
@@ -41,58 +44,64 @@ export class LoginComponent {
     }
   }
 
-  constructor(private router: Router) { }
-
   onEmailChange(newValue: string) {
     this.email = newValue;
     this.onClearError();
   }
 
   onSuggestionSelected(suggestion: string) {
-    this.email = `${suggestion ? suggestion : ''}`;
+    this.email = suggestion || '';
     this.onClearSuggestions();
     this.focusAtEmail();
   }
 
-  onTermsChange(event: any) {
+  onTermsChange() {
     this.onClearError();
     this.focusAtEmail();
   }
 
   onLabelTermsClick() {
-    if (this.terms) {
-      this.terms = false;
-      this.focusAtEmail();
-      this.onClearError();
-    }
-    else {
-      this.terms = true;
-      this.focusAtEmail();
-      this.onClearError();
-    }
+    this.terms = !this.terms;
+    this.onClearError();
+    this.focusAtEmail();
   }
 
   onSuggestionClicked(suggestion: string) {
-    this.emailAutocomplete?.onSuggestionClicked(suggestion);
+    if (this.emailAutocomplete) {
+      this.emailAutocomplete.onSuggestionClicked(suggestion);
+    }
   }
 
   login() {
-    if (this.terms == false && this.error) {
+    if (!this.terms && this.error) {
       this.error.nativeElement.innerText = 'Você precisa concordar com os termos.';
       this.focusAtEmail();
     }
-    else if (!this.validateEmail(this.email) && this.error && this.inputEmail) {
+    else if (!this.sharedService.validateEmail(this.email) && this.error && this.inputEmail) {
       this.error.nativeElement.innerText = 'Insira um endereço de email válido.';
-      this.inputEmail.nativeElement?.focus();
-    } else {
-      const [username, domain] = this.email.split('@');
-
-      this.router.navigate(['/signin-generator'], { queryParams: { username: username, domain: domain } });
+      this.inputEmail.nativeElement.focus();
     }
-  }
+    else {
+      const emailObject = { email: this.email };
+      const jsonEmail = JSON.stringify(emailObject);
 
-  validateEmail(email: string): boolean {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
+      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/register-email`, jsonEmail)
+        .subscribe(user => {
+          const storage = window.localStorage;
+          storage.setItem('session', user.session);
+          storage.setItem('email', this.email);
+          storage.setItem('isLogin', user.isLogin);
+
+          if(user.isLogin === 'false') {
+            storage.setItem('signin-validator-type', 'otp');
+            storage.setItem('signin-process-login', 'done');
+
+            this.router.navigate(['signin-validator']);
+          }
+          else if(user.isLogin === 'true') {
+            this.router.navigate(['signin-generator']);
+          }
+        });
+    }
   }
 }

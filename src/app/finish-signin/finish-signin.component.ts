@@ -1,4 +1,7 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+
+import { SharedHttpService } from '../shared/shared-http.service';
 
 @Component({
   selector: 'app-finish-signin',
@@ -10,15 +13,29 @@ export class FinishSigninComponent {
   @ViewChild('inputLastName', { static: false }) inputLastName?: ElementRef;
   @ViewChild('error', { static: false }) error?: ElementRef;
 
-  firstName: any = '';
-  lastName: any = '';
+  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedHttpService: SharedHttpService) { }
+
+  firstName = '';
+  lastName = '';
+  private email = '';
+  private session = '';
+
+  ngOnInit() {
+    const storage = window.localStorage;
+    this.email = storage.getItem('email') || '';
+    this.session = storage.getItem('session') || '';
+
+    if (!this.email || !this.session) {
+      this.router.navigate(['login']);
+    }
+  }
 
   ngAfterViewInit() {
     this.focusAtFirstName();
   }
 
-  onFirstNameChange(event: any) {
-    if(this.error && !this.validateNames(this.firstName)) {
+  onFirstNameChange() {
+    if (this.error && !this.validateNames(this.firstName)) {
       this.error.nativeElement.innerText = 'Primeiro nome inválido.';
     }
     else {
@@ -26,8 +43,8 @@ export class FinishSigninComponent {
     }
   }
 
-  onLastNameChange(event: any) {
-    if(this.error && !this.validateNames(this.lastName)) {
+  onLastNameChange() {
+    if (this.error && !this.validateNames(this.lastName)) {
       this.error.nativeElement.innerText = 'Sobrenome inválido.';
     }
     else {
@@ -38,9 +55,24 @@ export class FinishSigninComponent {
   updateName() {
     if (this.error && (!this.validateNames(this.firstName) || !this.validateNames(this.lastName))) {
       this.error.nativeElement.innerText = 'Nome inválido.';
-    }    
+    }
     else {
-      
+      const emailObject = {
+        email: this.email,
+        firstName: this.firstName,
+        lastName: this.lastName,
+        session: this.session
+      };
+      const jsonEmail = JSON.stringify(emailObject);
+
+      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/register-name`, jsonEmail)
+        .subscribe(user => {
+          const storage = window.localStorage;
+
+          storage.setItem('signin-process-finish', 'done');
+
+          this.router.navigate(['']);
+        });
     }
   }
 
@@ -52,11 +84,11 @@ export class FinishSigninComponent {
 
   validateNames(name: string) {
     const onlyLettersRegex = /^[a-zA-ZÀ-ÿ]+$/;
-  
+
     if (!name.match(onlyLettersRegex)) {
       return false;
     }
-  
+
     return true;
   }
 

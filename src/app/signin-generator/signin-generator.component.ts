@@ -1,5 +1,11 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { SharedHttpService } from '../shared/shared-http.service';
+
+interface Option {
+  name: string;
+  value: number;
+}
 
 @Component({
   selector: 'app-signin-generator',
@@ -7,35 +13,30 @@ import { Router, ActivatedRoute } from '@angular/router';
   styleUrls: ['./signin-generator.component.css']
 })
 export class SigninGeneratorComponent {
-  @ViewChild('error', { static: false }) error?: ElementRef;
+  @ViewChild('error', { static: false }) error?: ElementRef<HTMLParagraphElement>;
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
-
-  choices = [
+  choices: Option[] = [
     { name: 'Selecione uma opção', value: 1 },
     { name: 'Receber código de acesso', value: 2 },
     { name: 'Receber link de acesso', value: 3 }
   ];
 
-  selectedOption: number = 1;
-  username: any = '';
-  domain: any = '';
+  selectedOption = 1;
+  email = '';
+
+  constructor(private router: Router, private sharedHttpService: SharedHttpService, @Inject('API_URL') private apiUrl: string) { }
 
   ngOnInit() {
-    this.username = this.route.snapshot.queryParamMap.get('username');
-    this.domain = this.route.snapshot.queryParamMap.get('domain');
+    const storage = window.localStorage;
+    this.email = storage.getItem('email') || '';
 
-    if(this.username == null || this.username == null) {
+    if (storage.getItem('signin-process-login') !== 'done' || !this.email) {
       this.router.navigate(['login']);
     }
   }
 
-  ngAfterViewInit() {
-
-  }
-
   onOptionChange() {
-    if(this.selectedOption != 1) {
+    if (this.selectedOption != 1) {
       this.onClearError();
     }
   }
@@ -45,19 +46,22 @@ export class SigninGeneratorComponent {
       this.error.nativeElement.innerText = 'Você precisa escolher uma opção.';
     }
     else {
-      this.onRedirect(this.selectedOption);
-    }
-  }
+      const emailObject = {
+        email: this.email,
+        link: this.selectedOption == 3 ? 'true' : 'false',
+        otp: this.selectedOption == 2 ? 'true' : 'false'
+      };
+      
+      const jsonEmail = JSON.stringify(emailObject);
 
-  onRedirect(type: number) {
-    if(type == 2) {
-      this.router.navigate(['/signin-validator'], { queryParams: { type: 'otp', username: this.username, domain: this.domain } });
-    }
-    else if(type == 3) {
-      this.router.navigate(['/signin-validator'], { queryParams: { type: 'link', username: this.username, domain: this.domain } });
-    }
-    else {
-      this.router.navigate(['/signin-validator'], { queryParams: { type: 'error' } });
+      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/generate-otp`, jsonEmail)
+        .subscribe(user => {
+          const storage = window.localStorage;
+          storage.setItem('signin-validator-type', this.selectedOption == 2 ? 'otp' : 'link');
+          storage.setItem('signin-process-generator', 'done');
+
+          this.router.navigate(['signin-validator']);
+        });
     }
   }
 

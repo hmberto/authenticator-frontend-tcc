@@ -24,7 +24,7 @@ export class ConfirmAccessComponent {
       this.confirmAccessSession = this.route.snapshot.queryParamMap.get('session');
       this.confirmAccessEmail = this.route.snapshot.queryParamMap.get('email');
 
-      this.router.navigate(['/confirm-access']);
+      this.router.navigate(['confirm-access']);
     }
     else {
       this.router.navigate(['']);
