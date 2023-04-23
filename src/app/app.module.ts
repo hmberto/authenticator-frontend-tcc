@@ -10,6 +10,8 @@ import { FooterComponent } from './footer/footer.component';
 import { EmailAutocompleteDirective } from './login/email-autocomplete.directive';
 import { SigninGeneratorComponent } from './signin-generator/signin-generator.component';
 import { SigninValidatorComponent } from './signin-validator/signin-validator.component';
+import { FinishSigninComponent } from './finish-signin/finish-signin.component';
+import { ConfirmAccessComponent } from './confirm-access/confirm-access.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +21,9 @@ import { SigninValidatorComponent } from './signin-validator/signin-validator.co
     FooterComponent,
     EmailAutocompleteDirective,
     SigninGeneratorComponent,
-    SigninValidatorComponent
+    SigninValidatorComponent,
+    FinishSigninComponent,
+    ConfirmAccessComponent
   ],
   imports: [
     BrowserModule,

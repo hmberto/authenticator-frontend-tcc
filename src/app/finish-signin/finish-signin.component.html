@@ -1,0 +1,24 @@
+<div class="update-form">
+    <div class="cont">
+        <form (submit)="updateName()">
+            <label>
+                Qual o seu nome?
+            </label>
+
+            <p>Precisamos de um pouco mais de informações para configurar sua conta</p>
+
+            <input #inputFirstName placeholder="Nome" type="text" name="firstName" [(ngModel)]="firstName"
+                (ngModelChange)="onFirstNameChange($event)">
+            <br><br>
+            <input #inputLastName placeholder="Sobrenome" type="text" name="lastName" [(ngModel)]="lastName"
+                (ngModelChange)="onLastNameChange($event)">
+
+            <button type="submit">Enviar</button>
+            <br>
+
+            <div class="div-error">
+                <label #error class="error">⠀</label>
+            </div>
+        </form>
+    </div>
+</div>

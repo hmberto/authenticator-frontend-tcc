@@ -79,6 +79,8 @@ export class SigninValidatorComponent {
   }
 
   validatorLink() {
+    this.router.navigate(['/finish-signin'], { queryParams: { username: this.username, domain: this.domain } });
+
     if (this.errorLink) {
       this.errorLink.nativeElement.innerText = 'Não foi possivel confirmar seu acesso.';
     }
