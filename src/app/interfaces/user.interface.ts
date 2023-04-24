@@ -1,6 +1,6 @@
 export interface User {
     userId: number;
-    isLogin: string;
+    isLogin: boolean;
     session: string;
-    isSessionTokenActive: string;
+    isSessionTokenActive: boolean;
 }

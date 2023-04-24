@@ -90,15 +90,15 @@ export class LoginComponent {
           const storage = window.localStorage;
           storage.setItem('session', user.session);
           storage.setItem('email', this.email);
-          storage.setItem('isLogin', user.isLogin);
+          storage.setItem('isLogin', user.isLogin.toString());
 
-          if(user.isLogin === 'false') {
+          if(user.isLogin === false) {
             storage.setItem('signin-validator-type', 'otp');
             storage.setItem('signin-process-login', 'done');
 
             this.router.navigate(['signin-validator']);
           }
-          else if(user.isLogin === 'true') {
+          else if(user.isLogin === true) {
             this.router.navigate(['signin-generator']);
           }
         });

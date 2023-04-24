@@ -26,9 +26,9 @@ export class SharedHttpService {
           console.error(`Error: ${JSON.stringify(error.error)}`);
           const defaultUser: User = {
             userId: 0,
-            isLogin: '',
+            isLogin: false,
             session: '',
-            isSessionTokenActive: ''
+            isSessionTokenActive: false
           };
           return of(defaultUser);
         })
