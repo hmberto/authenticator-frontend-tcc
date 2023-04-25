@@ -27,7 +27,7 @@ export class SharedHttpService {
           const defaultUser: User = {
             userId: 0,
             isLogin: false,
-            session: '',
+            session: 'null',
             isSessionTokenActive: false
           };
           return of(defaultUser);

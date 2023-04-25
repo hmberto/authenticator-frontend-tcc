@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild, Inject } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { SharedHttpService } from '../shared/shared-http.service';
 
@@ -18,20 +18,21 @@ export class SigninValidatorComponent implements OnInit {
   otp = '';
   showOTPAuth = false;
   showLinkAuth = false;
-  private authType = '';
   private email = '';
+  private session = '';
+  private isLogin = '';
 
   ngOnInit() {
     const storage = window.localStorage;
-    const loginDone = storage.getItem('signin-process-login') == 'done';
-
-    this.authType = storage.getItem('signin-validator-type') || '';
+    const authType = storage.getItem('signin-validator-type') || '';
+    this.session = storage.getItem('session') || '';
+    this.isLogin = storage.getItem('isLogin') || '';
     this.email = storage.getItem('email') || '';
 
-    if (loginDone && this.email && this.authType == 'otp') {
+    if (this.email && authType == 'otp') {
       this.showOTPAuth = true;
     }
-    else if (loginDone && this.email && this.authType == 'link') {
+    else if (this.isLogin === 'true' && this.session.length == 100 && this.email && authType == 'link') {
       this.showLinkAuth = true;
     }
     else {
@@ -67,37 +68,41 @@ export class SigninValidatorComponent implements OnInit {
 
   validatorOTP() {
     if (this.otp.length != 6 && this.errorOTP) {
-      this.errorOTP.nativeElement.innerText = 'Insira um código de acesso válido.';
+      this.errorOTP.nativeElement.innerText = 'Insira um código de acesso válido';
       this.focusAtOTP();
     }
     else {
       const otpObject = {
         email: this.email,
         sessionTokenOrOTP: this.otp,
-        approve: 'true'
+        approve: true
       };
       const jsonEmail = JSON.stringify(otpObject);
 
-      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/validate-otp`, jsonEmail)
+      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/access-validator`, jsonEmail)
         .subscribe(user => {
-          if (user == null) {
-            const storage = window.localStorage;
-            storage.removeItem('signin-validator-type');
-            storage.setItem('signin-process-validator', 'done');
-
-            if (storage.getItem('isLogin') == 'false') {
-              this.router.navigate(['finish-signin']);
-            }
-            else {
-              this.router.navigate(['']);
-            }
-          }
-          else if (user.userId == 0) {
-            if (this.errorOTP) {
-              this.errorOTP.nativeElement.innerText = 'Insira um código de acesso válido.';
-            }
-          }
+          this.onRedirect(user);
         });
+    }
+  }
+
+  onRedirect(user: any) {
+    if (user.userId != 0 && user.isSessionTokenActive) {
+      const storage = window.localStorage;
+      storage.removeItem('signin-validator-type');
+      storage.setItem('session', user.session);
+
+      if (this.isLogin == 'false') {
+        this.router.navigate(['finish-signin']);
+      }
+      else {
+        this.router.navigate(['']);
+      }
+    }
+    else if (user.userId == 0) {
+      if (this.errorOTP) {
+        this.errorOTP.nativeElement.innerText = 'Não foi possivel validar o código digitado';
+      }
     }
   }
 

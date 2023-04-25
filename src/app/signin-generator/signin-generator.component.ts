@@ -28,9 +28,11 @@ export class SigninGeneratorComponent {
 
   ngOnInit() {
     const storage = window.localStorage;
+    const isLogin = storage.getItem('isLogin') || '';
     this.email = storage.getItem('email') || '';
 
-    if (storage.getItem('signin-process-login') !== 'done' || !this.email) {
+
+    if (storage.getItem('signin-process-login') !== 'done' || !this.email || isLogin !== 'true') {
       this.router.navigate(['login']);
     }
   }
@@ -43,25 +45,38 @@ export class SigninGeneratorComponent {
 
   generator() {
     if (this.selectedOption == 1 && this.error) {
-      this.error.nativeElement.innerText = 'Você precisa escolher uma opção.';
+      this.error.nativeElement.innerText = 'Você precisa escolher uma opção';
     }
     else {
       const emailObject = {
         email: this.email,
-        link: this.selectedOption == 3 ? 'true' : 'false',
-        otp: this.selectedOption == 2 ? 'true' : 'false'
+        link: this.selectedOption == 3 ? true : false,
+        otp: this.selectedOption == 2 ? true : false
       };
-      
+
       const jsonEmail = JSON.stringify(emailObject);
 
-      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/generate-otp`, jsonEmail)
+      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/access-requester`, jsonEmail)
         .subscribe(user => {
-          const storage = window.localStorage;
-          storage.setItem('signin-validator-type', this.selectedOption == 2 ? 'otp' : 'link');
-          storage.setItem('signin-process-generator', 'done');
-
-          this.router.navigate(['signin-validator']);
+          this.onRedirect(user);
         });
+    }
+  }
+
+  onRedirect(user: any) {
+    if (user.userId >= 1) {
+      const storage = window.localStorage;
+      storage.setItem('isLogin', user.isLogin.toString());
+      storage.setItem('signin-validator-type', this.selectedOption == 2 ? 'otp' : 'link');
+
+      if (user.isLogin && this.selectedOption == 3) {
+        storage.setItem('session', user.session);
+      }
+
+      this.router.navigate(['signin-validator']);
+    }
+    if (this.error) {
+      this.error.nativeElement.innerText = 'Não foi possivel validar o e-mail digitado';
     }
   }
 

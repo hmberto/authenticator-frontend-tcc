@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { SharedHttpService } from '../shared/shared-http.service';
 
@@ -19,13 +19,15 @@ export class FinishSigninComponent {
   lastName = '';
   private email = '';
   private session = '';
+  private isLogin = '';
 
   ngOnInit() {
     const storage = window.localStorage;
-    this.email = storage.getItem('email') || '';
     this.session = storage.getItem('session') || '';
+    this.isLogin = storage.getItem('isLogin') || '';
+    this.email = storage.getItem('email') || '';
 
-    if (!this.email || !this.session) {
+    if (this.isLogin === 'true' || !this.email || this.session.length != 100) {
       this.router.navigate(['login']);
     }
   }
@@ -54,7 +56,7 @@ export class FinishSigninComponent {
 
   updateName() {
     if (this.error && (!this.validateNames(this.firstName) || !this.validateNames(this.lastName))) {
-      this.error.nativeElement.innerText = 'Nome inválido.';
+      this.error.nativeElement.innerText = 'Nome inválido';
     }
     else {
       const emailObject = {
@@ -67,12 +69,22 @@ export class FinishSigninComponent {
 
       this.sharedHttpService.makeLogin(`${this.apiUrl}/api/register-name`, jsonEmail)
         .subscribe(user => {
-          const storage = window.localStorage;
-
-          storage.setItem('signin-process-finish', 'done');
-
-          this.router.navigate(['']);
+          this.onRedirect(user);
         });
+    }
+  }
+
+  onRedirect(user: any) {
+    if (user.userId != 0) {
+      const storage = window.localStorage;
+      storage.removeItem('isLogin');
+
+      this.router.navigate(['']);
+    }
+    else {
+      if (this.error) {
+        this.error.nativeElement.innerText = 'Não foi possivel salver o nome digitado';
+      }
     }
   }
 
