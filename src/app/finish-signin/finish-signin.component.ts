@@ -19,12 +19,14 @@ export class FinishSigninComponent {
   lastName = '';
   private email = '';
   private session = '';
+  private isSessionTokenActive = '';
   private isLogin = '';
 
   ngOnInit() {
     const storage = window.localStorage;
     this.session = storage.getItem('session') || '';
     this.isLogin = storage.getItem('isLogin') || '';
+    this.isSessionTokenActive = storage.getItem('isSessionTokenActive') || '';
     this.email = storage.getItem('email') || '';
 
     if (this.isLogin === 'true' || !this.email || this.session.length != 100) {
@@ -75,7 +77,7 @@ export class FinishSigninComponent {
   }
 
   onRedirect(user: any) {
-    if (user.userId != 0) {
+    if (user == null) {
       const storage = window.localStorage;
       storage.removeItem('isLogin');
 

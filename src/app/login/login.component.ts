@@ -85,7 +85,7 @@ export class LoginComponent {
       const emailObject = { email: this.email };
       const jsonEmail = JSON.stringify(emailObject);
 
-      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/access-requester`, jsonEmail)
+      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/register-email`, jsonEmail)
         .subscribe(user => {
           this.onRedirect(user);
         });
@@ -96,8 +96,9 @@ export class LoginComponent {
     if (user.userId >= 1) {
       const storage = window.localStorage;
       storage.setItem('email', this.email);
-
       storage.setItem('isLogin', user.isLogin.toString());
+      storage.setItem('session', user.session);
+      storage.setItem('isSessionTokenActive', user.isSessionTokenActive.toString());
 
       if (user.isLogin === false) {
         storage.setItem('signin-validator-type', 'otp');

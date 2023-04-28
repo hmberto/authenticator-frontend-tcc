@@ -74,12 +74,11 @@ export class SigninValidatorComponent implements OnInit {
     else {
       const otpObject = {
         email: this.email,
-        sessionTokenOrOTP: this.otp,
-        approve: true
+        otp: this.otp
       };
       const jsonEmail = JSON.stringify(otpObject);
 
-      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/access-validator`, jsonEmail)
+      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/validate-otp`, jsonEmail)
         .subscribe(user => {
           this.onRedirect(user);
         });
@@ -87,10 +86,12 @@ export class SigninValidatorComponent implements OnInit {
   }
 
   onRedirect(user: any) {
-    if (user.userId != 0 && user.isSessionTokenActive) {
+    if (user.userId >= 1 && user.isSessionTokenActive && user.session.length == 100) {
       const storage = window.localStorage;
       storage.removeItem('signin-validator-type');
+      storage.setItem('isLogin', user.isLogin.toString());
       storage.setItem('session', user.session);
+      storage.setItem('isSessionTokenActive', user.isSessionTokenActive.toString());
 
       if (this.isLogin == 'false') {
         this.router.navigate(['finish-signin']);

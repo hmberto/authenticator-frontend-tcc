@@ -29,10 +29,10 @@ export class SigninGeneratorComponent {
   ngOnInit() {
     const storage = window.localStorage;
     const isLogin = storage.getItem('isLogin') || '';
+    const isSessionTokenActive = storage.getItem('isSessionTokenActive') || '';
     this.email = storage.getItem('email') || '';
 
-
-    if (storage.getItem('signin-process-login') !== 'done' || !this.email || isLogin !== 'true') {
+    if (!this.email || isLogin === 'false' || isSessionTokenActive === 'false') {
       this.router.navigate(['login']);
     }
   }
@@ -56,7 +56,7 @@ export class SigninGeneratorComponent {
 
       const jsonEmail = JSON.stringify(emailObject);
 
-      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/access-requester`, jsonEmail)
+      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/register-email`, jsonEmail)
         .subscribe(user => {
           this.onRedirect(user);
         });
@@ -67,11 +67,9 @@ export class SigninGeneratorComponent {
     if (user.userId >= 1) {
       const storage = window.localStorage;
       storage.setItem('isLogin', user.isLogin.toString());
+      storage.setItem('session', user.session);
+      storage.setItem('isSessionTokenActive', user.isSessionTokenActive.toString());
       storage.setItem('signin-validator-type', this.selectedOption == 2 ? 'otp' : 'link');
-
-      if (user.isLogin && this.selectedOption == 3) {
-        storage.setItem('session', user.session);
-      }
 
       this.router.navigate(['signin-validator']);
     }
