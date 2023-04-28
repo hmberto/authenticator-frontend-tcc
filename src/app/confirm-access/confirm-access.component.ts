@@ -1,7 +1,7 @@
-import { Component, Injectable, Inject } from '@angular/core';
+import { Component, Injectable, Inject, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-
 import { SharedHttpService } from '../shared/shared-http.service';
+import { LoadingComponent } from '../loading/loading.component';
 
 @Component({
   selector: 'app-confirm-access',
@@ -12,7 +12,10 @@ import { SharedHttpService } from '../shared/shared-http.service';
   providedIn: 'root'
 })
 export class ConfirmAccessComponent {
-  constructor(private router: Router, private route: ActivatedRoute, @Inject('API_URL') private apiUrl: string, private sharedHttpService: SharedHttpService) { }
+  @ViewChild(LoadingComponent) loading: LoadingComponent;
+  constructor(private router: Router, private route: ActivatedRoute, @Inject('API_URL') private apiUrl: string, private sharedHttpService: SharedHttpService) {
+    this.loading = new LoadingComponent();
+  }
 
   confirmAccessDate: any = 'TESTE';
   confirmAccessIp: any = 'TESTE';
@@ -31,6 +34,22 @@ export class ConfirmAccessComponent {
     }
     else {
       this.router.navigate(['error']);
+    }
+  }
+  
+  showLoading() {
+    if(this.loading) {
+      setTimeout(() => {
+        this.loading.showLoading();
+      });
+    }
+  }
+
+  hideLoading() {
+    if(this.loading) {
+      setTimeout(() => {
+        this.loading.hideLoading();
+      });
     }
   }
 

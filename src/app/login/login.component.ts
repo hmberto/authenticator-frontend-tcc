@@ -1,10 +1,9 @@
 import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
 import { Router } from '@angular/router';
-
 import { SharedService } from '../shared/shared.service';
 import { SharedHttpService } from '../shared/shared-http.service';
-
 import { EmailAutocompleteDirective } from './email-autocomplete.directive';
+import { LoadingComponent } from '../loading/loading.component';
 
 @Component({
   selector: 'app-login',
@@ -15,8 +14,11 @@ export class LoginComponent {
   @ViewChild(EmailAutocompleteDirective, { static: false }) emailAutocomplete?: EmailAutocompleteDirective;
   @ViewChild('inputEmail', { static: false }) inputEmail?: ElementRef;
   @ViewChild('error', { static: false }) error?: ElementRef;
-
-  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedService: SharedService, private sharedHttpService: SharedHttpService) { }
+  @ViewChild(LoadingComponent) loading: LoadingComponent;
+  
+  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedService: SharedService, private sharedHttpService: SharedHttpService) {
+    this.loading = new LoadingComponent();
+  }
 
   email = '';
   terms = false;
@@ -24,6 +26,23 @@ export class LoginComponent {
 
   ngAfterViewInit() {
     this.focusAtEmail();
+    this.hideLoading();
+  }
+
+  showLoading() {
+    if(this.loading) {
+      setTimeout(() => {
+        this.loading.showLoading();
+      });
+    }
+  }
+
+  hideLoading() {
+    if(this.loading) {
+      setTimeout(() => {
+        this.loading.hideLoading();
+      });
+    }
   }
 
   focusAtEmail() {
@@ -82,6 +101,7 @@ export class LoginComponent {
       this.inputEmail.nativeElement.focus();
     }
     else {
+      this.showLoading();
       const emailObject = { email: this.email };
       const jsonEmail = JSON.stringify(emailObject);
 
@@ -93,6 +113,7 @@ export class LoginComponent {
   }
 
   onRedirect(user: any) {
+    this.hideLoading();
     if (user.userId >= 1) {
       const storage = window.localStorage;
       storage.setItem('email', this.email);

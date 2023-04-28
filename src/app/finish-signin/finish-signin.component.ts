@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
 import { Router } from '@angular/router';
-
 import { SharedHttpService } from '../shared/shared-http.service';
+import { LoadingComponent } from '../loading/loading.component';
 
 @Component({
   selector: 'app-finish-signin',
@@ -12,8 +12,11 @@ export class FinishSigninComponent {
   @ViewChild('inputFirstName', { static: false }) inputFirstName?: ElementRef;
   @ViewChild('inputLastName', { static: false }) inputLastName?: ElementRef;
   @ViewChild('error', { static: false }) error?: ElementRef;
+  @ViewChild(LoadingComponent) loading: LoadingComponent;
 
-  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedHttpService: SharedHttpService) { }
+  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedHttpService: SharedHttpService) {
+    this.loading = new LoadingComponent();
+  }
 
   firstName = '';
   lastName = '';
@@ -36,6 +39,22 @@ export class FinishSigninComponent {
 
   ngAfterViewInit() {
     this.focusAtFirstName();
+  }
+
+  showLoading() {
+    if(this.loading) {
+      setTimeout(() => {
+        this.loading.showLoading();
+      });
+    }
+  }
+
+  hideLoading() {
+    if(this.loading) {
+      setTimeout(() => {
+        this.loading.hideLoading();
+      });
+    }
   }
 
   onFirstNameChange() {

@@ -12,8 +12,8 @@
 
                 <ul id="emailAutocompleteList" class="email-suggestions-list">
                     <li *ngFor="let suggestion of emailAutocomplete.suggestionList; let i = index"
-                        [ngClass]="{ 'selected': i === activeSuggestion }"
-                        (click)="onSuggestionSelected(suggestion)">{{ suggestion }}</li>
+                        [ngClass]="{ 'selected': i === activeSuggestion }" (click)="onSuggestionSelected(suggestion)">{{
+                        suggestion }}</li>
                 </ul>
             </div>
 
@@ -29,3 +29,4 @@
         </form>
     </div>
 </div>
+<app-loading></app-loading>

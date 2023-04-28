@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild, Inject } from '@angular/core';
 import { Router } from '@angular/router';
-
 import { SharedHttpService } from '../shared/shared-http.service';
+import { LoadingComponent } from '../loading/loading.component';
 
 @Component({
   selector: 'app-signin-validator',
@@ -12,8 +12,11 @@ export class SigninValidatorComponent implements OnInit {
   @ViewChild('inputOTP', { static: false }) inputOTP?: ElementRef<HTMLInputElement>;
   @ViewChild('errorOTP', { static: false }) errorOTP?: ElementRef<HTMLElement>;
   @ViewChild('errorLink', { static: false }) errorLink?: ElementRef<HTMLElement>;
+  @ViewChild(LoadingComponent) loading: LoadingComponent;
 
-  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedHttpService: SharedHttpService) { }
+  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedHttpService: SharedHttpService) {
+    this.loading = new LoadingComponent(); 
+  }
 
   otp = '';
   showOTPAuth = false;
@@ -43,6 +46,22 @@ export class SigninValidatorComponent implements OnInit {
   ngAfterViewInit() {
     if (this.showOTPAuth) {
       this.focusAtOTP();
+    }
+  }
+
+  showLoading() {
+    if(this.loading) {
+      setTimeout(() => {
+        this.loading.showLoading();
+      });
+    }
+  }
+
+  hideLoading() {
+    if(this.loading) {
+      setTimeout(() => {
+        this.loading.hideLoading();
+      });
     }
   }
 
