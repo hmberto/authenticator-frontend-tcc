@@ -2,6 +2,7 @@ import { Component, Injectable, Inject, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SharedHttpService } from '../shared/shared-http.service';
 import { LoadingComponent } from '../loading/loading.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-confirm-access',
@@ -13,7 +14,7 @@ import { LoadingComponent } from '../loading/loading.component';
 })
 export class ConfirmAccessComponent {
   @ViewChild(LoadingComponent) loading: LoadingComponent;
-  constructor(private router: Router, private route: ActivatedRoute, @Inject('API_URL') private apiUrl: string, private sharedHttpService: SharedHttpService) {
+  constructor(private router: Router, private route: ActivatedRoute, private sharedHttpService: SharedHttpService) {
     this.loading = new LoadingComponent();
   }
 
@@ -68,7 +69,8 @@ export class ConfirmAccessComponent {
       };
       const jsonEmail = JSON.stringify(emailObject);
 
-      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/authorize-access-link`, jsonEmail)
+      const { apiUrl, validateAccessLink } = environment;
+      this.sharedHttpService.makeLogin(`${apiUrl}${validateAccessLink}`, jsonEmail)
         .subscribe(user => {
           this.onRedirect(user);
         });

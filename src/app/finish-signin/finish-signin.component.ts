@@ -2,6 +2,7 @@ import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { SharedHttpService } from '../shared/shared-http.service';
 import { LoadingComponent } from '../loading/loading.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-finish-signin',
@@ -14,7 +15,7 @@ export class FinishSigninComponent {
   @ViewChild('error', { static: false }) error?: ElementRef;
   @ViewChild(LoadingComponent) loading: LoadingComponent;
 
-  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedHttpService: SharedHttpService) {
+  constructor(private router: Router, private sharedHttpService: SharedHttpService) {
     this.loading = new LoadingComponent();
   }
 
@@ -90,7 +91,8 @@ export class FinishSigninComponent {
       };
       const jsonEmail = JSON.stringify(emailObject);
 
-      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/register-name`, jsonEmail)
+      const { apiUrl, registerName } = environment;
+      this.sharedHttpService.makeLogin(`${apiUrl}${registerName}`, jsonEmail)
         .subscribe(user => {
           this.onRedirect(user);
         });

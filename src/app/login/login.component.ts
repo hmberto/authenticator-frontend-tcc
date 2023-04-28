@@ -4,6 +4,7 @@ import { SharedService } from '../shared/shared.service';
 import { SharedHttpService } from '../shared/shared-http.service';
 import { EmailAutocompleteDirective } from './email-autocomplete.directive';
 import { LoadingComponent } from '../loading/loading.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +17,7 @@ export class LoginComponent {
   @ViewChild('error', { static: false }) error?: ElementRef;
   @ViewChild(LoadingComponent) loading: LoadingComponent;
   
-  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedService: SharedService, private sharedHttpService: SharedHttpService) {
+  constructor(private router: Router, private sharedService: SharedService, private sharedHttpService: SharedHttpService) {
     this.loading = new LoadingComponent();
   }
 
@@ -105,7 +106,8 @@ export class LoginComponent {
       const emailObject = { email: this.email };
       const jsonEmail = JSON.stringify(emailObject);
 
-      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/register-email`, jsonEmail)
+      const { apiUrl, registerEmail } = environment;
+      this.sharedHttpService.makeLogin(`${apiUrl}${registerEmail}`, jsonEmail)
         .subscribe(user => {
           this.onRedirect(user);
         });

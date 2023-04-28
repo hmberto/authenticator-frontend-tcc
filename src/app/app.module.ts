@@ -38,9 +38,7 @@ import { LoadingComponent } from './loading/loading.component';
     FormsModule,
     HttpClientModule
   ],
-  providers: [
-    { provide: 'API_URL', useValue: environment.apiUrl }
-  ],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

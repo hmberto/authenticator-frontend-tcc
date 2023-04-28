@@ -2,6 +2,7 @@ import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { SharedHttpService } from '../shared/shared-http.service';
 import { LoadingComponent } from '../loading/loading.component';
+import { environment } from '../../environments/environment';
 
 interface Option {
   name: string;
@@ -26,7 +27,7 @@ export class SigninGeneratorComponent {
   selectedOption = 1;
   email = '';
 
-  constructor(private router: Router, private sharedHttpService: SharedHttpService, @Inject('API_URL') private apiUrl: string) {
+  constructor(private router: Router, private sharedHttpService: SharedHttpService) {
     this.loading = new LoadingComponent();
   }
 
@@ -81,7 +82,8 @@ export class SigninGeneratorComponent {
 
       const jsonEmail = JSON.stringify(emailObject);
 
-      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/register-email`, jsonEmail)
+      const { apiUrl, registerEmail } = environment;
+      this.sharedHttpService.makeLogin(`${apiUrl}${registerEmail}`, jsonEmail)
         .subscribe(user => {
           this.onRedirect(user);
         });

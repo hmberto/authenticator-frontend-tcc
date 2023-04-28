@@ -2,6 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild, Inject } from '@angular/core'
 import { Router } from '@angular/router';
 import { SharedHttpService } from '../shared/shared-http.service';
 import { LoadingComponent } from '../loading/loading.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-signin-validator',
@@ -14,7 +15,7 @@ export class SigninValidatorComponent implements OnInit {
   @ViewChild('errorLink', { static: false }) errorLink?: ElementRef<HTMLElement>;
   @ViewChild(LoadingComponent) loading: LoadingComponent;
 
-  constructor(private router: Router, @Inject('API_URL') private apiUrl: string, private sharedHttpService: SharedHttpService) {
+  constructor(private router: Router, private sharedHttpService: SharedHttpService) {
     this.loading = new LoadingComponent(); 
   }
 
@@ -99,7 +100,8 @@ export class SigninValidatorComponent implements OnInit {
       };
       const jsonEmail = JSON.stringify(otpObject);
 
-      this.sharedHttpService.makeLogin(`${this.apiUrl}/api/validate-otp`, jsonEmail)
+      const { apiUrl, validateOtp } = environment;
+      this.sharedHttpService.makeLogin(`${apiUrl}${validateOtp}`, jsonEmail)
         .subscribe(user => {
           this.onRedirect(user);
         });
