@@ -15,6 +15,7 @@ import { SigninGeneratorComponent } from './signin-generator/signin-generator.co
 import { SigninValidatorComponent } from './signin-validator/signin-validator.component';
 import { FinishSigninComponent } from './finish-signin/finish-signin.component';
 import { ConfirmAccessComponent } from './confirm-access/confirm-access.component';
+import { ErrorComponent } from './error/error.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { ConfirmAccessComponent } from './confirm-access/confirm-access.componen
     SigninGeneratorComponent,
     SigninValidatorComponent,
     FinishSigninComponent,
-    ConfirmAccessComponent
+    ConfirmAccessComponent,
+    ErrorComponent
   ],
   imports: [
     BrowserModule,
