@@ -36,6 +36,10 @@ export class ConfirmAccessComponent {
       this.router.navigate(['error']);
     }
   }
+
+  ngAfterViewInit() {
+    this.hideLoading();
+  }
   
   showLoading() {
     if(this.loading) {
@@ -54,6 +58,7 @@ export class ConfirmAccessComponent {
   }
 
   confirmAccess(confirm: boolean) {
+    this.showLoading();
     if (confirm) {
       const emailObject = {
         email: this.confirmAccessEmail,

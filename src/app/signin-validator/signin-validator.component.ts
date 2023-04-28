@@ -21,7 +21,7 @@ export class SigninValidatorComponent implements OnInit {
   otp = '';
   showOTPAuth = false;
   showLinkAuth = false;
-  private email = '';
+  email = '';
   private session = '';
   private isLogin = '';
 
@@ -47,6 +47,7 @@ export class SigninValidatorComponent implements OnInit {
     if (this.showOTPAuth) {
       this.focusAtOTP();
     }
+    this.hideLoading();
   }
 
   showLoading() {
@@ -91,6 +92,7 @@ export class SigninValidatorComponent implements OnInit {
       this.focusAtOTP();
     }
     else {
+      this.showLoading();
       const otpObject = {
         email: this.email,
         otp: this.otp
@@ -105,6 +107,7 @@ export class SigninValidatorComponent implements OnInit {
   }
 
   onRedirect(user: any) {
+    this.hideLoading();
     if (user.userId >= 1 && user.isSessionTokenActive && user.session.length == 100) {
       const storage = window.localStorage;
       storage.removeItem('signin-validator-type');

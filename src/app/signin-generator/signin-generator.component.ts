@@ -1,6 +1,7 @@
 import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { SharedHttpService } from '../shared/shared-http.service';
+import { LoadingComponent } from '../loading/loading.component';
 
 interface Option {
   name: string;
@@ -14,6 +15,7 @@ interface Option {
 })
 export class SigninGeneratorComponent {
   @ViewChild('error', { static: false }) error?: ElementRef<HTMLParagraphElement>;
+  @ViewChild(LoadingComponent) loading: LoadingComponent;
 
   choices: Option[] = [
     { name: 'Selecione uma opção', value: 1 },
@@ -24,7 +26,9 @@ export class SigninGeneratorComponent {
   selectedOption = 1;
   email = '';
 
-  constructor(private router: Router, private sharedHttpService: SharedHttpService, @Inject('API_URL') private apiUrl: string) { }
+  constructor(private router: Router, private sharedHttpService: SharedHttpService, @Inject('API_URL') private apiUrl: string) {
+    this.loading = new LoadingComponent();
+  }
 
   ngOnInit() {
     const storage = window.localStorage;
@@ -32,8 +36,28 @@ export class SigninGeneratorComponent {
     const isSessionTokenActive = storage.getItem('isSessionTokenActive') || '';
     this.email = storage.getItem('email') || '';
 
-    if (!this.email || isLogin === 'false' || isSessionTokenActive === 'false') {
+    if (!this.email || isLogin === 'false' || isSessionTokenActive === 'true') {
       this.router.navigate(['login']);
+    }
+  }
+
+  ngAfterViewInit() {
+    this.hideLoading();
+  }
+
+  showLoading() {
+    if(this.loading) {
+      setTimeout(() => {
+        this.loading.showLoading();
+      });
+    }
+  }
+
+  hideLoading() {
+    if(this.loading) {
+      setTimeout(() => {
+        this.loading.hideLoading();
+      });
     }
   }
 
@@ -48,6 +72,7 @@ export class SigninGeneratorComponent {
       this.error.nativeElement.innerText = 'Você precisa escolher uma opção';
     }
     else {
+      this.showLoading();
       const emailObject = {
         email: this.email,
         link: this.selectedOption == 3 ? true : false,
@@ -64,6 +89,7 @@ export class SigninGeneratorComponent {
   }
 
   onRedirect(user: any) {
+    this.hideLoading();
     if (user.userId >= 1) {
       const storage = window.localStorage;
       storage.setItem('isLogin', user.isLogin.toString());

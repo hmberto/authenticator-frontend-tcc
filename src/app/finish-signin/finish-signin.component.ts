@@ -39,6 +39,7 @@ export class FinishSigninComponent {
 
   ngAfterViewInit() {
     this.focusAtFirstName();
+    this.hideLoading();
   }
 
   showLoading() {
@@ -80,6 +81,7 @@ export class FinishSigninComponent {
       this.error.nativeElement.innerText = 'Nome inválido';
     }
     else {
+      this.showLoading();
       const emailObject = {
         email: this.email,
         firstName: this.firstName,
@@ -96,6 +98,7 @@ export class FinishSigninComponent {
   }
 
   onRedirect(user: any) {
+    this.hideLoading();
     if (user == null) {
       const storage = window.localStorage;
       storage.removeItem('isLogin');
