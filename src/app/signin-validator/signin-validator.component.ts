@@ -4,6 +4,9 @@ import { SharedHttpService } from '../shared/shared-http.service';
 import { LoadingComponent } from '../loading/loading.component';
 import { environment } from '../../environments/environment';
 import { IsUserloggedInService } from '../is-userlogged-in.service'
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 @Component({
   selector: 'app-signin-validator',
@@ -16,8 +19,8 @@ export class SigninValidatorComponent implements OnInit {
   @ViewChild('errorLink', { static: false }) errorLink?: ElementRef<HTMLElement>;
   @ViewChild(LoadingComponent) loading: LoadingComponent;
 
-  constructor(private router: Router, private sharedHttpService: SharedHttpService, private isUserloggedInService: IsUserloggedInService) {
-    this.loading = new LoadingComponent(); 
+  constructor(private router: Router, private sharedHttpService: SharedHttpService, private isUserloggedInService: IsUserloggedInService, private http: HttpClient) {
+    this.loading = new LoadingComponent();
   }
 
   otp = '';
@@ -53,7 +56,7 @@ export class SigninValidatorComponent implements OnInit {
   }
 
   showLoading() {
-    if(this.loading) {
+    if (this.loading) {
       setTimeout(() => {
         this.loading.showLoading();
       });
@@ -61,7 +64,7 @@ export class SigninValidatorComponent implements OnInit {
   }
 
   hideLoading() {
-    if(this.loading) {
+    if (this.loading) {
       setTimeout(() => {
         this.loading.hideLoading();
       });
@@ -79,6 +82,10 @@ export class SigninValidatorComponent implements OnInit {
   onClearError() {
     if (this.errorOTP) {
       this.errorOTP.nativeElement.innerText = '⠀';
+    }
+
+    if (this.errorLink) {
+      this.errorLink.nativeElement.innerText = '⠀';
     }
   }
 
@@ -135,10 +142,50 @@ export class SigninValidatorComponent implements OnInit {
   }
 
   validatorLink() {
-    if (this.errorLink) {
-      this.errorLink.nativeElement.innerText = 'Não foi possível confirmar seu acesso.';
-    } else {
-      this.router.navigate(['finish-signin']);
+    this.onClearError();
+    this.showLoading();
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      })
+    };
+
+    const json = {
+      email: this.email,
+      sessionToken: this.session,
     }
+
+    const { apiUrl, checkSessionToken } = environment;
+    this.http.post<string>(`${apiUrl}${checkSessionToken}`, json, httpOptions)
+      .pipe(
+        catchError((error) => {
+          if (this.errorLink) {
+            this.hideLoading();
+            this.errorLink.nativeElement.innerText = 'Não foi possivel confirmar o login';
+          }
+          return throwError(error);
+        })
+      )
+      .subscribe((data) => {
+        this.hideLoading();
+        const resp = JSON.parse(JSON.stringify(data));
+
+        if (resp.Message == 'Valid session') {
+          const storage = window.localStorage;
+          storage.removeItem('signin-validator-type');
+          storage.setItem('isSessionTokenActive', 'true');
+          this.isUserloggedInService.setLoggedIn(true);
+          this.router.navigate(['']);
+        }
+        else if (resp.Message == 'Unconfirmed session' && this.errorLink) {
+          this.errorLink.nativeElement.innerText = 'Você não confirmou seu login';
+        }
+        else if (resp.Message == 'Invalid session token' && this.errorLink) {
+          this.errorLink.nativeElement.innerText = 'Tivemos um problema com seu login';
+        }
+        else if (this.errorLink) {
+          this.errorLink.nativeElement.innerText = 'Não foi possivel confirmar o login';
+        }
+      });
   }
 }

@@ -28,7 +28,10 @@ export class ProfileComponent {
   private session: string = '';
   private email: string = '';
 
+  showPage: boolean = false;
+
   ngOnInit() {
+    this.showLoading();
     const storage = window.localStorage;
     const isSessionTokenActive = storage.getItem('isSessionTokenActive') || '';
     this.session = storage.getItem('session') || '';
@@ -37,6 +40,14 @@ export class ProfileComponent {
     if (isSessionTokenActive != 'true' || this.session.length != 100 || !this.email) {
       this.router.navigate(['login']);
     }
+    else {
+      this.getUser();
+    }
+  }
+
+  getUser() {
+    this.showPage = true;
+    this.hideLoading();
   }
 
   editName() {

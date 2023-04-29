@@ -1,8 +1,10 @@
 import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { SharedHttpService } from '../shared/shared-http.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LoadingComponent } from '../loading/loading.component';
 import { environment } from '../../environments/environment';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 @Component({
   selector: 'app-finish-signin',
@@ -15,7 +17,7 @@ export class FinishSigninComponent {
   @ViewChild('error', { static: false }) error?: ElementRef;
   @ViewChild(LoadingComponent) loading: LoadingComponent;
 
-  constructor(private router: Router, private sharedHttpService: SharedHttpService) {
+  constructor(private router: Router, private http: HttpClient) {
     this.loading = new LoadingComponent();
   }
 
@@ -85,47 +87,51 @@ export class FinishSigninComponent {
     if (this.error && (!this.validateNames(this.firstName) || !this.validateNames(this.lastName))) {
       this.error.nativeElement.innerText = 'Nome inválido';
     }
+    else if (this.error && this.firstName == this.lastName) {
+      this.error.nativeElement.innerText = 'Nome igual ao sobrenome';
+    }
     else {
-      this.showLoading();
-      const emailObject = {
-        email: this.email,
-        firstName: this.firstName,
-        lastName: this.lastName,
-        session: this.session
-      };
-      const jsonEmail = JSON.stringify(emailObject);
-
-      const { apiUrl, registerName } = environment;
-      this.sharedHttpService.makeLogin(`${apiUrl}${registerName}`, jsonEmail)
-        .subscribe(user => {
-          this.onRedirect(user);
-        });
+      this.onSaveName()
     }
   }
 
-  onRedirect(user: any) {
+  onSaveName() {
+    this.showLoading();
+
+    const json = {
+      email: this.email,
+      firstName: this.firstName,
+      lastName: this.lastName,
+      session: this.session
+    };
+
+    const { apiUrl, registerName, httpOptions } = environment;
+    this.http.patch<string>(`${apiUrl}${registerName}`, json, httpOptions)
+      .pipe(
+        catchError((error) => {
+          this.showError('Não foi possivel salver o nome digitado');
+          return throwError(error);
+        })
+      )
+      .subscribe((data) => {
+        this.onRedirect()
+      });
+  }
+
+  onRedirect() {
+    const storage = window.localStorage;
+    storage.removeItem('editName');
+    storage.removeItem('isLogin');
+
     this.hideLoading();
 
     const url = this.router.url;
 
-    if (user == null && url == '/edit-name') {
-      const storage = window.localStorage;
-      storage.removeItem('editName');
-      storage.removeItem('isLogin');
-
+    if (url == '/edit-name') {
       this.router.navigate(['profile']);
     }
-    else if (user == null) {
-      const storage = window.localStorage;
-      storage.removeItem('isLogin');
-      storage.removeItem('editName');
-
-      this.router.navigate(['']);
-    }
     else {
-      if (this.error) {
-        this.error.nativeElement.innerText = 'Não foi possivel salver o nome digitado';
-      }
+      this.router.navigate(['']);
     }
   }
 
@@ -154,6 +160,12 @@ export class FinishSigninComponent {
   focusAtLastName() {
     if (this.inputLastName) {
       this.inputLastName.nativeElement.focus();
+    }
+  }
+
+  showError(message: string) {
+    if (this.error) {
+      this.error.nativeElement.innerText = message;
     }
   }
 }

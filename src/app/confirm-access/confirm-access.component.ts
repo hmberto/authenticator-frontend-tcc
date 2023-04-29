@@ -87,39 +87,46 @@ export class ConfirmAccessComponent {
   }
 
   getConfirmationData() {
-    this.http.get<AccessLink>(`${this.apiUrl}${this.checkAccessLink}${this.confirmAccessToken}`)
-    .pipe(
-      catchError((error) => {
-        this.router.navigate(['']);
-        return throwError(error);
-      })
-    )
-    .subscribe((data) => {
-      this.confirmAccessDate = data.createdAt;
-      this.confirmAccessIp = data.requestIP;
-      this.confirmAccessBrowser = data.requestBrowser;
-      this.confirmAccessOS = data.requestOS;
-      this.confirmAccessSameIP = data.sameIP;
-  
-      this.hideLoading();
-      this.showPage = true;
-    });
+    const { apiUrl, checkAccessLink } = environment;
+    this.http.get<AccessLink>(`${apiUrl}${checkAccessLink}${this.confirmAccessToken}`)
+      .pipe(
+        catchError((error) => {
+          this.router.navigate(['']);
+          return throwError(error);
+        })
+      )
+      .subscribe((data) => {
+        this.confirmAccessDate = data.createdAt;
+        this.confirmAccessIp = data.requestIP;
+        this.confirmAccessBrowser = data.requestBrowser;
+        this.confirmAccessOS = data.requestOS;
+        this.confirmAccessSameIP = data.sameIP;
+
+        this.hideLoading();
+        this.showPage = true;
+      });
   }
 
   confirmAccess(confirm: boolean) {
     this.showLoading();
     if (confirm) {
-      const emailObject = {
+      const json = {
         email: this.confirmAccessEmail,
         sessionToken: this.confirmAccessSession,
         emailToken: this.confirmAccessToken,
         approve: true
       };
-      const jsonEmail = JSON.stringify(emailObject);
 
-      this.sharedHttpService.makeLogin(`${this.apiUrl}${this.validateAccessLink}`, jsonEmail)
-        .subscribe(user => {
-          this.onRedirect(user);
+      const { apiUrl, validateAccessLink, httpOptions } = environment;
+      this.http.patch<string>(`${apiUrl}${validateAccessLink}`, json, httpOptions)
+        .pipe(
+          catchError((error) => {
+            this.router.navigate(['404']);
+            return throwError(error);
+          })
+        )
+        .subscribe((data) => {
+          this.router.navigate(['']);
         });
     }
     else {

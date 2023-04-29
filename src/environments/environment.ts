@@ -1,3 +1,5 @@
+import { HttpHeaders } from '@angular/common/http';
+
 export const environment = {
     production: false,
     apiUrl: 'http://localhost:8080/api',
@@ -7,5 +9,10 @@ export const environment = {
     validateAccessLink: '/validate/access-link',
     checkAccessLink: '/check/access-link/',
     checkSessionToken: '/check/session',
-    logout: '/logout'
+    logout: '/logout',
+    httpOptions: {
+        headers: new HttpHeaders({
+            'Content-Type': 'application/json'
+        })
+    }
 };
