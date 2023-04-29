@@ -5,7 +5,8 @@
     <nav class="opcoes">
         <ul>
             <li><a href="">início</a></li>
-            <li><a href="/login">Entrar ou Cadastrar</a></li>
+            <li *ngIf="!(loggedIn$ | async)"><a href="/login">Login/Cadastro</a></li>
+            <li *ngIf="(loggedIn$ | async)"><a href="/profile">Meu perfil</a></li>
         </ul>
     </nav>
 </header>

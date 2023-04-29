@@ -1,8 +1,9 @@
-import { Component, ElementRef, OnInit, ViewChild, Inject } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { SharedHttpService } from '../shared/shared-http.service';
 import { LoadingComponent } from '../loading/loading.component';
 import { environment } from '../../environments/environment';
+import { IsUserloggedInService } from '../is-userlogged-in.service'
 
 @Component({
   selector: 'app-signin-validator',
@@ -15,7 +16,7 @@ export class SigninValidatorComponent implements OnInit {
   @ViewChild('errorLink', { static: false }) errorLink?: ElementRef<HTMLElement>;
   @ViewChild(LoadingComponent) loading: LoadingComponent;
 
-  constructor(private router: Router, private sharedHttpService: SharedHttpService) {
+  constructor(private router: Router, private sharedHttpService: SharedHttpService, private isUserloggedInService: IsUserloggedInService) {
     this.loading = new LoadingComponent(); 
   }
 
@@ -117,6 +118,8 @@ export class SigninValidatorComponent implements OnInit {
       storage.setItem('session', user.session);
       storage.setItem('isSessionTokenActive', user.isSessionTokenActive.toString());
 
+      this.isUserloggedInService.setLoggedIn(true);
+
       if (this.isLogin == 'false') {
         this.router.navigate(['finish-signin']);
       }
@@ -135,7 +138,6 @@ export class SigninValidatorComponent implements OnInit {
     if (this.errorLink) {
       this.errorLink.nativeElement.innerText = 'Não foi possível confirmar seu acesso.';
     } else {
-      window.localStorage.setItem('signin-process-validator', 'done');
       this.router.navigate(['finish-signin']);
     }
   }

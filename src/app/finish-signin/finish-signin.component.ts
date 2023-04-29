@@ -28,12 +28,16 @@ export class FinishSigninComponent {
 
   ngOnInit() {
     const storage = window.localStorage;
+    const editName = storage.getItem('editName') || '';
     this.session = storage.getItem('session') || '';
     this.isLogin = storage.getItem('isLogin') || '';
     this.isSessionTokenActive = storage.getItem('isSessionTokenActive') || '';
     this.email = storage.getItem('email') || '';
 
-    if (this.isLogin === 'true' || !this.email || this.session.length != 100) {
+    if (!this.email || this.session.length != 100 || this.isSessionTokenActive != 'true') {
+      this.router.navigate(['login']);
+    }
+    else if (this.isLogin == 'true' && editName != 'true') {
       this.router.navigate(['login']);
     }
   }
@@ -44,7 +48,7 @@ export class FinishSigninComponent {
   }
 
   showLoading() {
-    if(this.loading) {
+    if (this.loading) {
       setTimeout(() => {
         this.loading.showLoading();
       });
@@ -52,7 +56,7 @@ export class FinishSigninComponent {
   }
 
   hideLoading() {
-    if(this.loading) {
+    if (this.loading) {
       setTimeout(() => {
         this.loading.hideLoading();
       });
@@ -101,9 +105,20 @@ export class FinishSigninComponent {
 
   onRedirect(user: any) {
     this.hideLoading();
-    if (user == null) {
+
+    const url = this.router.url;
+
+    if (user == null && url == '/edit-name') {
+      const storage = window.localStorage;
+      storage.removeItem('editName');
+      storage.removeItem('isLogin');
+
+      this.router.navigate(['profile']);
+    }
+    else if (user == null) {
       const storage = window.localStorage;
       storage.removeItem('isLogin');
+      storage.removeItem('editName');
 
       this.router.navigate(['']);
     }

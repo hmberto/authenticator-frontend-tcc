@@ -17,6 +17,7 @@ import { FinishSigninComponent } from './finish-signin/finish-signin.component';
 import { ConfirmAccessComponent } from './confirm-access/confirm-access.component';
 import { ErrorComponent } from './error/error.component';
 import { LoadingComponent } from './loading/loading.component';
+import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { LoadingComponent } from './loading/loading.component';
     FinishSigninComponent,
     ConfirmAccessComponent,
     ErrorComponent,
-    LoadingComponent
+    LoadingComponent,
+    ProfileComponent
   ],
   imports: [
     BrowserModule,

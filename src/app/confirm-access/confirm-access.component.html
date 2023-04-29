@@ -1,23 +1,37 @@
 <div class="confirm-access">
-    <div class="cont">
+    <div class="cont" [ngClass]="{'hide': !showPage}">
         <label>
             Solicitação de acesso
         </label>
 
-        <p>Enviamos este link porque identificamos uma tentativa de login para este endereço de e-mail. Se você não foi
-            você, por favor, não autorize o login
-        </p>
+        <p>Enviamos este link porque identificamos uma tentativa de login para este endereço de e-mail</p>
+        <div class="warn">
+            <span><img src="../../assets/img/warn.png" alt="">Se você não foi você, por favor, não autorize o
+                login</span>
+        </div>
+
         <br>
         <p>Data: {{ confirmAccessDate }}</p>
-        <p>IP: {{ confirmAccessIp }}</p>
+        <p [ngClass]="{'hide': !confirmAccessSameIP}">O mesmo que o endereço IP atual ({{ confirmAccessIp }})
+        </p>
+        <p>Navegador: {{ confirmAccessBrowser }}</p>
+        <p>Sistema Operacional: {{ confirmAccessOS }}</p>
         <p>Email: {{ confirmAccessEmail }}</p>
 
-        <button type="confirm" (click)="confirmAccess(true)">Fazer login</button>
+        <button type="confirm" (click)="onShowPopup()">Fazer login</button>
         <button type="reject" (click)="confirmAccess(false)">Não permitir</button>
 
         <div class="div-error">
             <label #error class="error">⠀</label>
         </div>
+    </div>
+</div>
+<div class="popup" [ngClass]="{'hide': !showPopup, 'show': showPopup}">
+    <div class="text-box">
+        <p>Por favor, confirme se você realmente deseja fazer login clicando em "Continuar", ou clique em "Cancelar" para voltar à página anterior</p>
+
+        <button type="confirm" (click)="confirmAccess(true)">Continuarn</button>
+        <button type="reject" (click)="onHidePopup()">Cancelar</button>
     </div>
 </div>
 <app-loading></app-loading>

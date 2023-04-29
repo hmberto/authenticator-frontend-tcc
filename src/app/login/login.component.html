@@ -8,7 +8,8 @@
             <div class="email-suggestions">
                 <input #inputEmail placeholder="contato@example.com" type="text" name="email" [(ngModel)]="email"
                     (ngModelChange)="onEmailChange($event)" emailAutocomplete #emailAutocomplete="emailAutocomplete"
-                    (suggestionSelected)="onSuggestionSelected($event)">
+                    (suggestionSelected)="onSuggestionSelected($event)"
+                    autocomplete="off">
 
                 <ul id="emailAutocompleteList" class="email-suggestions-list">
                     <li *ngFor="let suggestion of emailAutocomplete.suggestionList; let i = index"

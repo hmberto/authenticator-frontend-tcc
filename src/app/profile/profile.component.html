@@ -1,0 +1,17 @@
+<div class="user-form">
+    <div class="cont">
+        <label>
+            Perfil
+        </label>
+        <span>
+            Nome: {{ userFirstName }}
+        </span>
+        <span>
+            Sobrenome: {{ userLastName }}
+        </span>
+        <br>
+        <button type="submit" (click)="editName()">Editar nome</button>
+        <button type="logout" (click)="logout()">Sair da conta</button>
+    </div>
+</div>
+<app-loading></app-loading>

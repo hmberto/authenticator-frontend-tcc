@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { SharedService } from '../shared/shared.service';
 import { SharedHttpService } from '../shared/shared-http.service';
@@ -24,6 +24,16 @@ export class LoginComponent {
   email = '';
   terms = false;
   activeSuggestion: any = null;
+
+  ngOnInit() {
+    const storage = window.localStorage;
+    const session = storage.getItem('session') || '';
+    const isSessionTokenActive = storage.getItem('isSessionTokenActive') || '';
+
+    if (session.length == 100 && isSessionTokenActive == 'true') {
+      this.router.navigate(['profile']);
+    }
+  }
 
   ngAfterViewInit() {
     this.focusAtEmail();
