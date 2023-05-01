@@ -48,6 +48,11 @@ export class ProfileComponent {
     }
   }
 
+  ngAfterViewInit() {
+    this.showPage = false;
+    this.sharedService.onShowLoading(this.loading);
+  }
+
   getUser() {
     this.showPage = true;
     this.sharedService.onHideLoading(this.loading);
