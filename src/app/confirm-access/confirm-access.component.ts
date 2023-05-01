@@ -40,6 +40,8 @@ export class ConfirmAccessComponent {
   showPopup: boolean = false;
 
   ngOnInit() {
+    this.sharedService.onShowLoading(this.loading);
+
     if (this.route.snapshot.queryParamMap.get('session')?.length == 100 && this.route.snapshot.queryParamMap.get('token')?.length == 50) {
       this.confirmAccessToken = this.route.snapshot.queryParamMap.get('token');
       this.confirmAccessSession = this.route.snapshot.queryParamMap.get('session');
@@ -55,6 +57,10 @@ export class ConfirmAccessComponent {
     else {
       this.router.navigate(['404']);
     }
+  }
+
+  ngAfterViewInit() {
+    this.sharedService.onShowLoading(this.loading);
   }
 
   onShowPopup() {
