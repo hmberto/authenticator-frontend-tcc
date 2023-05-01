@@ -1,11 +1,12 @@
 import { Component, ViewChild } from '@angular/core';
 import { LoadingComponent } from '../loading/loading.component';
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { IsUserloggedInService } from '../is-userlogged-in.service'
+import { SharedService } from '../shared/shared.service';
 
 @Component({
   selector: 'app-profile',
@@ -15,15 +16,16 @@ import { IsUserloggedInService } from '../is-userlogged-in.service'
 export class ProfileComponent {
   @ViewChild(LoadingComponent) loading: LoadingComponent;
 
-  constructor(private router: Router, private http: HttpClient, private isUserloggedInService: IsUserloggedInService) {
+  constructor(private router: Router, private http: HttpClient, private isUserloggedInService: IsUserloggedInService, private sharedService: SharedService) {
     this.loading = new LoadingComponent();
   }
 
   private apiUrl = environment.apiUrl;
   private logoutPath = environment.logout;
+  private httpOptions = environment.httpOptions;
 
-  userFirstName: string = 'Humberto';
-  userLastName: string = 'Araújo';
+  userFirstName: string = '';
+  userLastName: string = '';
 
   private session: string = '';
   private email: string = '';
@@ -31,7 +33,8 @@ export class ProfileComponent {
   showPage: boolean = false;
 
   ngOnInit() {
-    this.showLoading();
+    this.sharedService.onShowLoading(this.loading);
+
     const storage = window.localStorage;
     const isSessionTokenActive = storage.getItem('isSessionTokenActive') || '';
     this.session = storage.getItem('session') || '';
@@ -47,7 +50,26 @@ export class ProfileComponent {
 
   getUser() {
     this.showPage = true;
-    this.hideLoading();
+    this.sharedService.onHideLoading(this.loading);
+
+    const { apiUrl, getUserData, httpOptions } = environment;
+
+    this.http.get<string>(`${apiUrl}${getUserData}${this.email}`, httpOptions)
+      .pipe(
+        catchError((error) => {
+          this.logout();
+          return throwError(error);
+        })
+      )
+      .subscribe((data) => {
+        this.sharedService.onHideLoading(this.loading);
+        this.showPage = true;
+
+        const resp = JSON.parse(JSON.stringify(data));
+
+        this.userFirstName = resp.firstName;
+        this.userLastName = resp.lastName;
+      });
   }
 
   editName() {
@@ -57,14 +79,8 @@ export class ProfileComponent {
   }
 
   logout() {
-    this.showLoading();
+    this.sharedService.onShowLoading(this.loading);
     this.clearLocalStorage();
-
-    const httpOptions = {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json'
-      })
-    };
 
     const json = {
       email: this.email,
@@ -72,11 +88,11 @@ export class ProfileComponent {
       killAll: false
     }
 
-    this.http.post<String>(`${this.apiUrl}${this.logoutPath}`, json, httpOptions)
+    this.http.put<string>(`${this.apiUrl}${this.logoutPath}`, json, this.httpOptions)
       .pipe(
         catchError((error) => {
-          this.router.navigate(['']);
           this.isUserloggedInService.setLoggedIn(false);
+          this.router.navigate(['']);
           return throwError(error);
         })
       )
@@ -94,21 +110,5 @@ export class ProfileComponent {
     storage.removeItem('isSessionTokenActive');
     storage.removeItem('signin-validator-type');
     storage.removeItem('editName');
-  }
-
-  showLoading() {
-    if (this.loading) {
-      setTimeout(() => {
-        this.loading.showLoading();
-      });
-    }
-  }
-
-  hideLoading() {
-    if (this.loading) {
-      setTimeout(() => {
-        this.loading.hideLoading();
-      });
-    }
   }
 }

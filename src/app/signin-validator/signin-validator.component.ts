@@ -1,12 +1,13 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { SharedHttpService } from '../shared/shared-http.service';
+import { SharedService } from '../shared/shared.service';
 import { LoadingComponent } from '../loading/loading.component';
 import { environment } from '../../environments/environment';
 import { IsUserloggedInService } from '../is-userlogged-in.service'
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
+import { User } from '../interfaces/user.interface';
 
 @Component({
   selector: 'app-signin-validator',
@@ -19,7 +20,7 @@ export class SigninValidatorComponent implements OnInit {
   @ViewChild('errorLink', { static: false }) errorLink?: ElementRef<HTMLElement>;
   @ViewChild(LoadingComponent) loading: LoadingComponent;
 
-  constructor(private router: Router, private sharedHttpService: SharedHttpService, private isUserloggedInService: IsUserloggedInService, private http: HttpClient) {
+  constructor(private router: Router, private sharedService: SharedService, private isUserloggedInService: IsUserloggedInService, private http: HttpClient) {
     this.loading = new LoadingComponent();
   }
 
@@ -52,23 +53,7 @@ export class SigninValidatorComponent implements OnInit {
     if (this.showOTPAuth) {
       this.focusAtOTP();
     }
-    this.hideLoading();
-  }
-
-  showLoading() {
-    if (this.loading) {
-      setTimeout(() => {
-        this.loading.showLoading();
-      });
-    }
-  }
-
-  hideLoading() {
-    if (this.loading) {
-      setTimeout(() => {
-        this.loading.hideLoading();
-      });
-    }
+    this.sharedService.onHideLoading(this.loading);
   }
 
   onOTPChange() {
@@ -80,13 +65,8 @@ export class SigninValidatorComponent implements OnInit {
   }
 
   onClearError() {
-    if (this.errorOTP) {
-      this.errorOTP.nativeElement.innerText = '⠀';
-    }
-
-    if (this.errorLink) {
-      this.errorLink.nativeElement.innerText = '⠀';
-    }
+    this.sharedService.onClearError(this.errorOTP);
+    this.sharedService.onClearError(this.errorLink);
   }
 
   focusAtOTP() {
@@ -101,23 +81,31 @@ export class SigninValidatorComponent implements OnInit {
       this.focusAtOTP();
     }
     else {
-      this.showLoading();
-      const otpObject = {
+      this.sharedService.onShowLoading(this.loading);
+
+      const json = {
         email: this.email,
         otp: this.otp
       };
-      const jsonEmail = JSON.stringify(otpObject);
 
-      const { apiUrl, validateOtp } = environment;
-      this.sharedHttpService.makeLogin(`${apiUrl}${validateOtp}`, jsonEmail)
-        .subscribe(user => {
-          this.onRedirect(user);
+      const { apiUrl, validateOtp, httpOptions } = environment;
+
+      this.http.post<User>(`${apiUrl}${validateOtp}`, json, httpOptions)
+        .pipe(
+          catchError((error) => {
+            this.sharedService.onHideLoading(this.loading);
+            this.sharedService.onShowError(this.errorOTP, 'Não foi possivel validar o código digitado');
+            return throwError(error);
+          })
+        )
+        .subscribe((user) => {
+          this.sharedService.onHideLoading(this.loading);
+          this.onRedirectOTP(user);
         });
     }
   }
 
-  onRedirect(user: any) {
-    this.hideLoading();
+  onRedirectOTP(user: User) {
     if (user.userId >= 1 && user.isSessionTokenActive && user.session.length == 100) {
       const storage = window.localStorage;
       storage.removeItem('signin-validator-type');
@@ -135,57 +123,53 @@ export class SigninValidatorComponent implements OnInit {
       }
     }
     else if (user.userId == 0) {
-      if (this.errorOTP) {
-        this.errorOTP.nativeElement.innerText = 'Não foi possivel validar o código digitado';
-      }
+      this.sharedService.onShowError(this.errorOTP, 'Não foi possivel validar o código digitado');
     }
   }
 
   validatorLink() {
-    this.onClearError();
-    this.showLoading();
-    const httpOptions = {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json'
-      })
-    };
+    this.sharedService.onClearError(this.errorLink);
+    this.sharedService.onShowLoading(this.loading);
 
     const json = {
       email: this.email,
       sessionToken: this.session,
     }
 
-    const { apiUrl, checkSessionToken } = environment;
+    const { apiUrl, checkSessionToken, httpOptions } = environment;
+
     this.http.post<string>(`${apiUrl}${checkSessionToken}`, json, httpOptions)
       .pipe(
         catchError((error) => {
-          if (this.errorLink) {
-            this.hideLoading();
-            this.errorLink.nativeElement.innerText = 'Não foi possivel confirmar o login';
-          }
+          this.sharedService.onHideLoading(this.loading);
+          this.sharedService.onShowError(this.errorLink, 'Não foi possivel confirmar o login');
           return throwError(error);
         })
       )
       .subscribe((data) => {
-        this.hideLoading();
+        this.sharedService.onHideLoading(this.loading);
         const resp = JSON.parse(JSON.stringify(data));
 
-        if (resp.Message == 'Valid session') {
-          const storage = window.localStorage;
-          storage.removeItem('signin-validator-type');
-          storage.setItem('isSessionTokenActive', 'true');
-          this.isUserloggedInService.setLoggedIn(true);
-          this.router.navigate(['']);
-        }
-        else if (resp.Message == 'Unconfirmed session' && this.errorLink) {
-          this.errorLink.nativeElement.innerText = 'Você não confirmou seu login';
-        }
-        else if (resp.Message == 'Invalid session token' && this.errorLink) {
-          this.errorLink.nativeElement.innerText = 'Tivemos um problema com seu login';
-        }
-        else if (this.errorLink) {
-          this.errorLink.nativeElement.innerText = 'Não foi possivel confirmar o login';
-        }
+        this.onRedirectLink(resp);
       });
+  }
+
+  onRedirectLink(resp: any) {
+    if (resp.Status == 'Valid session') {
+      const storage = window.localStorage;
+      storage.removeItem('signin-validator-type');
+      storage.setItem('isSessionTokenActive', 'true');
+      this.isUserloggedInService.setLoggedIn(true);
+      this.router.navigate(['']);
+    }
+    else if (resp.Status == 'Unconfirmed session') {
+      this.sharedService.onShowError(this.errorLink, 'Você não confirmou seu login');
+    }
+    else if (resp.Status == 'Invalid session token') {
+      this.sharedService.onShowError(this.errorLink, 'Tivemos um problema com seu login');
+    }
+    else {
+      this.sharedService.onShowError(this.errorLink, 'Não foi possivel confirmar o login');
+    }
   }
 }

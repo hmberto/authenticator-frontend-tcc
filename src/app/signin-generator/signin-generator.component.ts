@@ -1,8 +1,12 @@
 import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { SharedHttpService } from '../shared/shared-http.service';
+import { SharedService } from '../shared/shared.service';
 import { LoadingComponent } from '../loading/loading.component';
 import { environment } from '../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
+import { User } from '../interfaces/user.interface';
 
 interface Option {
   name: string;
@@ -27,7 +31,7 @@ export class SigninGeneratorComponent {
   selectedOption = 1;
   email = '';
 
-  constructor(private router: Router, private sharedHttpService: SharedHttpService) {
+  constructor(private router: Router, private sharedService: SharedService, private http: HttpClient) {
     this.loading = new LoadingComponent();
   }
 
@@ -43,28 +47,12 @@ export class SigninGeneratorComponent {
   }
 
   ngAfterViewInit() {
-    this.hideLoading();
-  }
-
-  showLoading() {
-    if(this.loading) {
-      setTimeout(() => {
-        this.loading.showLoading();
-      });
-    }
-  }
-
-  hideLoading() {
-    if(this.loading) {
-      setTimeout(() => {
-        this.loading.hideLoading();
-      });
-    }
+    this.sharedService.onHideLoading(this.loading);
   }
 
   onOptionChange() {
     if (this.selectedOption != 1) {
-      this.onClearError();
+      this.sharedService.onClearError(this.error);
     }
   }
 
@@ -73,25 +61,32 @@ export class SigninGeneratorComponent {
       this.error.nativeElement.innerText = 'Você precisa escolher uma opção';
     }
     else {
-      this.showLoading();
-      const emailObject = {
+      this.sharedService.onShowLoading(this.loading);
+
+      const json = {
         email: this.email,
         link: this.selectedOption == 3 ? true : false,
         otp: this.selectedOption == 2 ? true : false
       };
 
-      const jsonEmail = JSON.stringify(emailObject);
+      const { apiUrl, registerEmail, httpOptions } = environment;
 
-      const { apiUrl, registerEmail } = environment;
-      this.sharedHttpService.makeLogin(`${apiUrl}${registerEmail}`, jsonEmail)
-        .subscribe(user => {
-          this.onRedirect(user);
+      this.http.post<User>(`${apiUrl}${registerEmail}`, json, httpOptions)
+        .pipe(
+          catchError((error) => {
+            this.sharedService.onHideLoading(this.loading);
+            this.sharedService.onShowError(this.error, 'Não conseguimos enviar o e-mail no momento');
+            return throwError(error);
+          })
+        )
+        .subscribe((user) => {
+          this.onRedirect(user)
         });
     }
   }
 
   onRedirect(user: any) {
-    this.hideLoading();
+    this.sharedService.onHideLoading(this.loading);
     if (user.userId >= 1) {
       const storage = window.localStorage;
       storage.setItem('isLogin', user.isLogin.toString());
@@ -101,14 +96,6 @@ export class SigninGeneratorComponent {
 
       this.router.navigate(['signin-validator']);
     }
-    if (this.error) {
-      this.error.nativeElement.innerText = 'Não foi possivel validar o e-mail digitado';
-    }
-  }
-
-  onClearError() {
-    if (this.error) {
-      this.error.nativeElement.innerText = '⠀';
-    }
+    this.sharedService.onShowError(this.error, 'Não conseguimos enviar o e-mail no momento');
   }
 }

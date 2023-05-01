@@ -1,6 +1,6 @@
 import { Component, Injectable, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { SharedHttpService } from '../shared/shared-http.service';
+import { SharedService } from '../shared/shared.service';
 import { LoadingComponent } from '../loading/loading.component';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
@@ -18,7 +18,7 @@ import { AccessLink } from '../interfaces/access-link.interface';
 })
 export class ConfirmAccessComponent {
   @ViewChild(LoadingComponent) loading: LoadingComponent;
-  constructor(private router: Router, private route: ActivatedRoute, private sharedHttpService: SharedHttpService, private http: HttpClient) {
+  constructor(private router: Router, private route: ActivatedRoute, private sharedService: SharedService, private http: HttpClient) {
     this.loading = new LoadingComponent();
   }
 
@@ -50,31 +50,10 @@ export class ConfirmAccessComponent {
         queryParams: {}
       });
 
-      this.getConfirmationData()
+      this.getConfirmationData();
     }
     else {
       this.router.navigate(['404']);
-    }
-  }
-
-  ngAfterViewInit() {
-    this.showLoading();
-  }
-
-  showLoading() {
-    this.onHidePopup();
-    if (this.loading) {
-      setTimeout(() => {
-        this.loading.showLoading();
-      });
-    }
-  }
-
-  hideLoading() {
-    if (this.loading) {
-      setTimeout(() => {
-        this.loading.hideLoading();
-      });
     }
   }
 
@@ -87,8 +66,12 @@ export class ConfirmAccessComponent {
   }
 
   getConfirmationData() {
-    const { apiUrl, checkAccessLink } = environment;
-    this.http.get<AccessLink>(`${apiUrl}${checkAccessLink}${this.confirmAccessToken}`)
+    this.onHidePopup();
+    this.sharedService.onShowLoading(this.loading);
+
+    const { apiUrl, checkAccessLink, httpOptions } = environment;
+
+    this.http.get<AccessLink>(`${apiUrl}${checkAccessLink}${this.confirmAccessToken}`, httpOptions)
       .pipe(
         catchError((error) => {
           this.router.navigate(['']);
@@ -102,13 +85,15 @@ export class ConfirmAccessComponent {
         this.confirmAccessOS = data.requestOS;
         this.confirmAccessSameIP = data.sameIP;
 
-        this.hideLoading();
+        this.sharedService.onHideLoading(this.loading);
         this.showPage = true;
       });
   }
 
   confirmAccess(confirm: boolean) {
-    this.showLoading();
+    this.onHidePopup();
+    this.sharedService.onShowLoading(this.loading);
+
     if (confirm) {
       const json = {
         email: this.confirmAccessEmail,
@@ -118,7 +103,8 @@ export class ConfirmAccessComponent {
       };
 
       const { apiUrl, validateAccessLink, httpOptions } = environment;
-      this.http.patch<string>(`${apiUrl}${validateAccessLink}`, json, httpOptions)
+
+      this.http.post<string>(`${apiUrl}${validateAccessLink}`, json, httpOptions)
         .pipe(
           catchError((error) => {
             this.router.navigate(['404']);
@@ -128,15 +114,6 @@ export class ConfirmAccessComponent {
         .subscribe((data) => {
           this.router.navigate(['']);
         });
-    }
-    else {
-      this.router.navigate(['']);
-    }
-  }
-
-  onRedirect(user: any) {
-    if (user == null) {
-      this.router.navigate(['']);
     }
     else {
       this.router.navigate(['']);

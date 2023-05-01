@@ -1,10 +1,13 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { SharedService } from '../shared/shared.service';
-import { SharedHttpService } from '../shared/shared-http.service';
 import { EmailAutocompleteDirective } from './email-autocomplete.directive';
 import { LoadingComponent } from '../loading/loading.component';
 import { environment } from '../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
+import { User } from '../interfaces/user.interface';
 
 @Component({
   selector: 'app-login',
@@ -16,8 +19,8 @@ export class LoginComponent {
   @ViewChild('inputEmail', { static: false }) inputEmail?: ElementRef;
   @ViewChild('error', { static: false }) error?: ElementRef;
   @ViewChild(LoadingComponent) loading: LoadingComponent;
-  
-  constructor(private router: Router, private sharedService: SharedService, private sharedHttpService: SharedHttpService) {
+
+  constructor(private router: Router, private sharedService: SharedService, private http: HttpClient) {
     this.loading = new LoadingComponent();
   }
 
@@ -37,23 +40,7 @@ export class LoginComponent {
 
   ngAfterViewInit() {
     this.focusAtEmail();
-    this.hideLoading();
-  }
-
-  showLoading() {
-    if(this.loading) {
-      setTimeout(() => {
-        this.loading.showLoading();
-      });
-    }
-  }
-
-  hideLoading() {
-    if(this.loading) {
-      setTimeout(() => {
-        this.loading.hideLoading();
-      });
-    }
+    this.sharedService.onHideLoading(this.loading);
   }
 
   focusAtEmail() {
@@ -68,15 +55,9 @@ export class LoginComponent {
     }
   }
 
-  onClearError() {
-    if (this.terms && this.error) {
-      this.error.nativeElement.innerText = '⠀';
-    }
-  }
-
   onEmailChange(newValue: string) {
     this.email = newValue;
-    this.onClearError();
+    this.sharedService.onClearError(this.error);
   }
 
   onSuggestionSelected(suggestion: string) {
@@ -86,13 +67,13 @@ export class LoginComponent {
   }
 
   onTermsChange() {
-    this.onClearError();
+    this.sharedService.onClearError(this.error);
     this.focusAtEmail();
   }
 
   onLabelTermsClick() {
     this.terms = !this.terms;
-    this.onClearError();
+    this.sharedService.onClearError(this.error);
     this.focusAtEmail();
   }
 
@@ -103,29 +84,36 @@ export class LoginComponent {
   }
 
   login() {
-    if (!this.terms && this.error) {
-      this.error.nativeElement.innerText = 'Você precisa concordar com os termos';
+    if (!this.terms) {
+      this.sharedService.onShowError(this.error, 'Você precisa concordar com os termos');
       this.focusAtEmail();
     }
-    else if (!this.sharedService.validateEmail(this.email) && this.error && this.inputEmail) {
-      this.error.nativeElement.innerText = 'Insira um endereço de email válido';
-      this.inputEmail.nativeElement.focus();
+    else if (!this.sharedService.onValidateEmail(this.email)) {
+      this.sharedService.onShowError(this.error, 'Insira um endereço de email válido');
+      this.focusAtEmail();
     }
     else {
-      this.showLoading();
-      const emailObject = { email: this.email };
-      const jsonEmail = JSON.stringify(emailObject);
+      this.sharedService.onShowLoading(this.loading);
 
-      const { apiUrl, registerEmail } = environment;
-      this.sharedHttpService.makeLogin(`${apiUrl}${registerEmail}`, jsonEmail)
-        .subscribe(user => {
-          this.onRedirect(user);
+      const json = { email: this.email };
+      const { apiUrl, registerEmail, httpOptions } = environment;
+
+      this.http.post<User>(`${apiUrl}${registerEmail}`, json, httpOptions)
+        .pipe(
+          catchError((error) => {
+            this.sharedService.onHideLoading(this.loading);
+            this.sharedService.onShowError(this.error, 'Não foi possivel validar o e-mail digitado');
+            return throwError(error);
+          })
+        )
+        .subscribe((user) => {
+          this.onRedirect(user)
         });
     }
   }
 
   onRedirect(user: any) {
-    this.hideLoading();
+    this.sharedService.onHideLoading(this.loading);
     if (user.userId >= 1) {
       const storage = window.localStorage;
       storage.setItem('email', this.email);
@@ -142,9 +130,7 @@ export class LoginComponent {
       }
     }
     else {
-      if (this.error) {
-        this.error.nativeElement.innerText = 'Não foi possivel validar o e-mail digitado';
-      }
+      this.sharedService.onShowError(this.error, 'Não foi possivel validar o e-mail digitado');
     }
   }
 }
